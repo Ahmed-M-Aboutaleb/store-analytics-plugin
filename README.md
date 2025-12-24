@@ -8,57 +8,51 @@
   </a>
 </p>
 <h1 align="center">
-  Medusa Plugin Starter
+  Medusa Store Analytics Plugin
 </h1>
 
-<h4 align="center">
-  <a href="https://docs.medusajs.com">Documentation</a> |
-  <a href="https://www.medusajs.com">Website</a>
-</h4>
+### Objectives
 
-<p align="center">
-  Building blocks for digital commerce
-</p>
-<p align="center">
-  <a href="https://github.com/medusajs/medusa/blob/master/CONTRIBUTING.md">
-    <img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat" alt="PRs welcome!" />
-  </a>
-    <a href="https://www.producthunt.com/posts/medusa"><img src="https://img.shields.io/badge/Product%20Hunt-%231%20Product%20of%20the%20Day-%23DA552E" alt="Product Hunt"></a>
-  <a href="https://discord.gg/xpCwq3Kfn8">
-    <img src="https://img.shields.io/badge/chat-on%20discord-7289DA.svg" alt="Discord Chat" />
-  </a>
-  <a href="https://twitter.com/intent/follow?screen_name=medusajs">
-    <img src="https://img.shields.io/twitter/follow/medusajs.svg?label=Follow%20@medusajs" alt="Follow @medusajs" />
-  </a>
-</p>
+- Provide a single Admin Analytics Dashboard
+- Clear revenue and order health metrics
+- Date Range Picker with presets: This Month, Last Month, Last 3 Months, Custom Range (applies to all analytics)
+- Charts and KPIs
+  - Orders Tab: Total Orders (KPI), Orders Over Time (Line Chart), Total Sales Over Time (Line Chart)
+  - Products Tab: Top variants, New Customers by time (Line Chart)
+- Tables
+  - Orders: Order ID, Date, Country, Subtotal (before tax, checkout currency), Customer Tax (checkout currency), Gross (paid by customer, checkout currency), Stripe Fees (checkout currency)
 
-## Compatibility
+### UI / Views
 
-This starter is compatible with versions >= 2.4.0 of `@medusajs/medusa`. 
+1. Analytics Dashboard with two tabs: Orders and Products
+2. Orders Table Analytics with the columns above
 
-## Getting Started
+### Orders Table Analytics
 
-Visit the [Quickstart Guide](https://docs.medusajs.com/learn/installation) to set up a server.
+Include a currency selector (USD, AED, KWD, GBP, and the customer payment currency). When an admin selects a currency, all orders are converted using historical exchange rates. If no currency is selected, totals display in the original currencies from the table.
 
-Visit the [Plugins documentation](https://docs.medusajs.com/learn/fundamentals/plugins) to learn more about plugins and how to create them.
+### Challenges
 
-Visit the [Docs](https://docs.medusajs.com/learn/installation#get-started) to learn more about our system requirements.
+1. N+1 API Problem: Stripe fees sit behind `/admin/orders/:id/stripe-fees`.
+2. Currency Normalization: Need historical exchange rates to convert mixed currencies into a single reporting currency.
+3. Old Orders Sync: Ensure historical order data is accurately imported and synchronized with current analytics.
 
-## What is Medusa
+### Solving Challenges
 
-Medusa is a set of commerce modules and tools that allow you to build rich, reliable, and performant commerce applications without reinventing core commerce logic. The modules can be customized and used to build advanced ecommerce stores, marketplaces, or any product that needs foundational commerce primitives. All modules are open-source and freely available on npm.
+#### Challenge 1: The N+1 Stripe Fees Problem
 
-Learn more about [Medusa’s architecture](https://docs.medusajs.com/learn/introduction/architecture) and [commerce modules](https://docs.medusajs.com/learn/fundamentals/modules/commerce-modules) in the Docs.
+- Problem: Fetching fees for 50 orders requires 1 call to Medusa + 50 calls to Stripe.
+- Solution: Event-driven write-side optimization. Listen to `payment.captured`, fetch the Stripe fee once, and store `metadata.stripe_fee` and `metadata.stripe_currency` on the order. The analytics query then reads fees directly with no extra API calls.
 
-## Community & Contributions
+#### Challenge 2: Currency Normalization (Historical Rates)
 
-The community and core team are available in [GitHub Discussions](https://github.com/medusajs/medusa/discussions), where you can ask for support, discuss roadmap, and share ideas.
+- Problem: An order of EUR 100 from last month is not worth the same in USD today.
+- Solution: Historical rate caching via a `CurrencyNormalizationService`. Use a provider such as OpenExchangeRates or Fixer.io. Cache by source currency, target currency, and order date (Redis or DB). When requested, check cache first; if missing, fetch and store. Conversion formula: Reported Value = (Order Value / Source Rate on Date) \* Target Rate on Date.
 
-Join our [Discord server](https://discord.com/invite/medusajs) to meet other community members.
+#### Challenge 3: Old Orders Sync
 
-## Other channels
+- Backfill historical orders and their Stripe fees. Reuse the same normalization service for past dates to keep analytics consistent with live data.
 
-- [GitHub Issues](https://github.com/medusajs/medusa/issues)
-- [Twitter](https://twitter.com/medusajs)
-- [LinkedIn](https://www.linkedin.com/company/medusajs)
-- [Medusa Blog](https://medusajs.com/blog/)
+### Tech Stack
+
+- Medusa.js v2.12.3
