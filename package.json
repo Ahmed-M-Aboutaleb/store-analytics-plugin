@@ -1,6 +1,6 @@
 {
   "name": "@ps-tech/store-analytics-plugin",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A Medusa plugin to provide store analytics features.",
   "author": "Ahmed-M-Aboutaleb <ahmed.aboutaleb.work@gmail.com>",
   "license": "MIT",
@@ -60,7 +60,9 @@
     "@medusajs/icons": "2.12.3",
     "@medusajs/medusa": "2.12.3",
     "@medusajs/test-utils": "2.12.3",
-    "@medusajs/ui": "4.0.25"
+    "@medusajs/ui": "4.0.25",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "engines": {
     "node": ">=20"
