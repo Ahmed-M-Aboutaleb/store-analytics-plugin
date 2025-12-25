@@ -61,6 +61,12 @@ const OrdersTab = () => {
   const ordersSeries = data?.series.orders ?? [];
   const salesSeries = data?.series.sales ?? [];
 
+  const shortDate = (value: string | number) => {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  };
+
   return (
     <div className="space-y-4">
       <Surface>
@@ -135,7 +141,10 @@ const OrdersTab = () => {
                   xAxisDataKey="date"
                   yAxisDataKey="value"
                   lineColor="#2563eb"
+                  xAxisTickFormatter={shortDate}
                   yAxisTickFormatter={(value) => numberFmt.format(value)}
+                  tooltipLabelFormatter={shortDate}
+                  yAxisDomain={["dataMin", "dataMax"]}
                 />
               </div>
             ) : (
@@ -153,9 +162,12 @@ const OrdersTab = () => {
                   xAxisDataKey="date"
                   yAxisDataKey="value"
                   lineColor="#16a34a"
+                  xAxisTickFormatter={shortDate}
                   yAxisTickFormatter={(value) =>
                     currencyFmt(displayCurrency).format(value)
                   }
+                  tooltipLabelFormatter={shortDate}
+                  yAxisDomain={["dataMin", "dataMax"]}
                 />
               </div>
             ) : (

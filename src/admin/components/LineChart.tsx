@@ -17,7 +17,10 @@ type LineChartProps = {
   xAxisDataKey: string;
   yAxisDataKey: string;
   lineColor?: string;
+  xAxisTickFormatter?: (value: string | number) => string;
   yAxisTickFormatter?: (value: number) => string;
+  tooltipLabelFormatter?: (value: string | number) => string;
+  yAxisDomain?: [number | "dataMin" | "auto", number | "dataMax" | "auto"];
 };
 
 export const LineChart: React.FC<LineChartProps> = ({
@@ -25,7 +28,10 @@ export const LineChart: React.FC<LineChartProps> = ({
   xAxisDataKey,
   yAxisDataKey,
   lineColor = "#3B82F6",
+  xAxisTickFormatter,
   yAxisTickFormatter,
+  tooltipLabelFormatter,
+  yAxisDomain,
 }) => {
   const isDark = useDarkMode();
 
@@ -35,7 +41,10 @@ export const LineChart: React.FC<LineChartProps> = ({
     return (
       <div className="space-y-2">
         <ResponsiveContainer aspect={16 / 9}>
-          <RechartsBarChart data={data} margin={{ left: 20 }}>
+          <RechartsBarChart
+            data={data}
+            margin={{ top: 8, right: 12, bottom: 8, left: 0 }}
+          >
             <CartesianGrid
               strokeDasharray="3 3"
               stroke={isDark ? "#374151" : "#E5E7EB"}
@@ -46,6 +55,7 @@ export const LineChart: React.FC<LineChartProps> = ({
               axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
               tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
               tickMargin={10}
+              tickFormatter={xAxisTickFormatter}
             />
             <YAxis
               tickFormatter={yAxisTickFormatter}
@@ -53,6 +63,7 @@ export const LineChart: React.FC<LineChartProps> = ({
               tick={{ fill: isDark ? "#D1D5DB" : "#6B7280" }}
               axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
               tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
+              domain={yAxisDomain}
             />
             <Tooltip
               cursor={{
@@ -66,6 +77,11 @@ export const LineChart: React.FC<LineChartProps> = ({
                   ? yAxisTickFormatter(numericValue)
                   : numericValue;
               }}
+              labelFormatter={(value) =>
+                tooltipLabelFormatter
+                  ? tooltipLabelFormatter(value as string | number)
+                  : String(value)
+              }
               contentStyle={{
                 backgroundColor: isDark ? "#1F2937" : "#FFFFFF",
                 border: `1px solid ${isDark ? "#374151" : "#E5E7EB"}`,
@@ -95,7 +111,10 @@ export const LineChart: React.FC<LineChartProps> = ({
 
   return (
     <ResponsiveContainer aspect={16 / 9}>
-      <RechartsLineChart data={data} margin={{ left: 20 }}>
+      <RechartsLineChart
+        data={data}
+        margin={{ top: 8, right: 12, bottom: 8, left: 0 }}
+      >
         <CartesianGrid
           strokeDasharray="3 3"
           stroke={isDark ? "#374151" : "#E5E7EB"}
@@ -106,6 +125,7 @@ export const LineChart: React.FC<LineChartProps> = ({
           axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickMargin={10}
+          tickFormatter={xAxisTickFormatter}
         />
         <YAxis
           tickFormatter={yAxisTickFormatter}
@@ -113,6 +133,7 @@ export const LineChart: React.FC<LineChartProps> = ({
           tick={{ fill: isDark ? "#D1D5DB" : "#6B7280" }}
           axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
+          domain={yAxisDomain}
         />
         <Tooltip
           cursor={{
@@ -122,6 +143,11 @@ export const LineChart: React.FC<LineChartProps> = ({
           }}
           formatter={(value?: number) =>
             yAxisTickFormatter ? yAxisTickFormatter(value ?? 0) : value ?? 0
+          }
+          labelFormatter={(value) =>
+            tooltipLabelFormatter
+              ? tooltipLabelFormatter(value as string | number)
+              : String(value)
           }
           contentStyle={{
             backgroundColor: isDark ? "#1F2937" : "#FFFFFF",
