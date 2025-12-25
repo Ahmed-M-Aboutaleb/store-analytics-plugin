@@ -66,5 +66,8 @@
   },
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "recharts": "^3.6.0"
   }
 }
