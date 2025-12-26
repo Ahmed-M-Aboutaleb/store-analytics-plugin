@@ -8,17 +8,9 @@ import {
   OrdersResponse,
   Preset,
 } from "../../api/admin/analytics/orders/types";
-
-const numberFmt = new Intl.NumberFormat(undefined, {
-  maximumFractionDigits: 0,
-});
-
-const currencyFmt = (code: string | null) =>
-  new Intl.NumberFormat(undefined, {
-    style: "currency",
-    currency: code || "USD",
-    maximumFractionDigits: 2,
-  });
+import { BarChart } from "./BarChart";
+import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
+import { sdk } from "../../utils/sdk";
 
 const OrdersTab = () => {
   const preset: Preset = "this-month";
@@ -31,14 +23,12 @@ const OrdersTab = () => {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ preset, currency });
-      const res = await fetch(`/admin/analytics/orders?${params.toString()}`, {
-        credentials: "include",
-      });
-      if (!res.ok) {
-        throw new Error(`Request failed (${res.status})`);
-      }
-      const body = (await res.json()) as OrdersResponse;
+      const body = await sdk.client.fetch<OrdersResponse>(
+        "/admin/analytics/orders",
+        {
+          query: { preset, currency },
+        }
+      );
       setData(body);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load";
@@ -60,6 +50,13 @@ const OrdersTab = () => {
   const displayCurrency = currency === "original" ? latestCurrency : currency;
   const ordersSeries = data?.series.orders ?? [];
   const salesSeries = data?.series.sales ?? [];
+
+  const numberFormatter = useMemo(() => createIntegerFormatter(), []);
+
+  const currencyFormatter = useMemo(
+    () => createCurrencyFormatter(displayCurrency),
+    [displayCurrency]
+  );
 
   const shortDate = (value: string | number) => {
     const d = new Date(value);
@@ -111,19 +108,19 @@ const OrdersTab = () => {
         <Surface>
           <Heading level="h3">Total Orders</Heading>
           <Text size="large" weight="plus" className="text-ui-fg-base">
-            {numberFmt.format(data?.kpis.total_orders ?? 0)}
+            {numberFormatter.format(data?.kpis.total_orders ?? 0)}
           </Text>
         </Surface>
         <Surface>
           <Heading level="h3">Total Sales</Heading>
           <Text size="large" weight="plus" className="text-ui-fg-base">
-            {currencyFmt(displayCurrency).format(data?.kpis.total_sales ?? 0)}
+            {currencyFormatter.format(data?.kpis.total_sales ?? 0)}
           </Text>
         </Surface>
         <Surface>
           <Heading level="h3">Orders Count</Heading>
           <Text size="large" weight="plus" className="text-ui-fg-base">
-            {numberFmt.format(data?.orders.count ?? 0)}
+            {numberFormatter.format(data?.orders.count ?? 0)}
           </Text>
         </Surface>
       </div>
@@ -131,7 +128,7 @@ const OrdersTab = () => {
       <Surface>
         <div className="grid gap-6 md:grid-cols-2">
           <div>
-            <Heading level="h3" className="mb-2">
+            <Heading level="h3" className="mb-2 text-center">
               Orders Over Time
             </Heading>
             {ordersSeries.length ? (
@@ -142,7 +139,7 @@ const OrdersTab = () => {
                   yAxisDataKey="value"
                   lineColor="#2563eb"
                   xAxisTickFormatter={shortDate}
-                  yAxisTickFormatter={(value) => numberFmt.format(value)}
+                  yAxisTickFormatter={(value) => numberFormatter.format(value)}
                   tooltipLabelFormatter={shortDate}
                   yAxisDomain={["dataMin", "dataMax"]}
                 />
@@ -152,22 +149,21 @@ const OrdersTab = () => {
             )}
           </div>
           <div>
-            <Heading level="h3" className="mb-2">
+            <Heading level="h3" className="mb-2 text-center">
               Sales Over Time
             </Heading>
             {salesSeries.length ? (
               <div className="w-full" style={{ aspectRatio: "16/9" }}>
-                <LineChart
+                <BarChart
                   data={salesSeries}
                   xAxisDataKey="date"
                   yAxisDataKey="value"
                   lineColor="#16a34a"
-                  xAxisTickFormatter={shortDate}
                   yAxisTickFormatter={(value) =>
-                    currencyFmt(displayCurrency).format(value)
+                    currencyFormatter.format(value)
                   }
-                  tooltipLabelFormatter={shortDate}
-                  yAxisDomain={["dataMin", "dataMax"]}
+                  useStableColors
+                  colorKeyField="date"
                 />
               </div>
             ) : (
