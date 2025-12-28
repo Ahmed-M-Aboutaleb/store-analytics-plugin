@@ -14,7 +14,7 @@ const AnalyticsPage = () => {
             Analytics
           </Heading>
           <Text size="small" className="text-ui-fg-subtle">
-            Track your store&apos;s performance over time.
+            Overview of product performance and customer growth.{" "}
           </Text>
         </div>
         <ChartBar className="h-5 w-5 text-ui-fg-muted" />
