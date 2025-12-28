@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
-import { Container, Heading, Tabs, Text } from "@medusajs/ui";
+import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
 import OrdersTab from "../../components/OrderTab";
 import ProductsTab from "../../components/ProductTab";
 import Surface from "../../components/Surface";
@@ -27,11 +27,11 @@ const AnalyticsPage = () => {
         </Surface>
 
         <Tabs defaultValue="orders">
-          <Tabs.List>
+          <Tabs.List className="justify-center">
             <Tabs.Trigger value="orders">Orders</Tabs.Trigger>
             <Tabs.Trigger value="products">Products</Tabs.Trigger>
           </Tabs.List>
-
+          <Divider className="mt-4 mb-4" />
           <Tabs.Content value="orders" className="pt-4">
             <OrdersTab />
           </Tabs.Content>
