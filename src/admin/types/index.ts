@@ -1,4 +1,4 @@
-type DateRange = {
-  from: string;
-  to: string;
+export type DateRange = {
+  from?: string;
+  to?: string;
 };

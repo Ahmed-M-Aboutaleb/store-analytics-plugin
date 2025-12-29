@@ -1,11 +1,49 @@
+import { useState, useEffect } from "react";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
 import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
 import OrdersTab from "../../components/OrderTab";
 import ProductsTab from "../../components/ProductTab";
 import Surface from "../../components/Surface";
+import DateInput from "../../components/DateInput";
+import { DateRange } from "../../types/index";
+import { Preset } from "../../../api/admin/analytics/orders/types";
 
 const AnalyticsPage = () => {
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: undefined,
+    to: undefined,
+  });
+  const [preset, setPreset] = useState<Preset>("this-month");
+  // const [data, setData] = useState<any>(null);
+
+  useEffect(() => {
+    if (preset === "custom" && (!dateRange.from || !dateRange.to)) {
+      return;
+    }
+    const fetchAnalytics = async () => {
+      if (preset === "custom" && (!dateRange.from || !dateRange.to)) return;
+
+      const params = new URLSearchParams();
+      params.set("preset", preset);
+      if (preset === "custom") {
+        params.set("from", dateRange.from!);
+        params.set("to", dateRange.to!);
+      }
+
+      try {
+        const res = await fetch(`/admin/analytics/orders?${params.toString()}`);
+        const json = await res.json();
+        console.log(json);
+        // setData(json);
+      } catch (err) {
+        console.error("Analytics fetch error:", err);
+      }
+    };
+
+    fetchAnalytics();
+  }, [preset, dateRange.from, dateRange.to]);
+
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -22,8 +60,14 @@ const AnalyticsPage = () => {
 
       <div className="space-y-5 px-6 py-5">
         <Surface>
-          {/* TODO: Date Range Inputs */}
-          Date Range Picker with Presets Goes Here
+          <DateInput
+            preset={preset}
+            onPresetChange={(p) => setPreset(p)}
+            value={dateRange}
+            onChange={(range) => {
+              setDateRange(range);
+            }}
+          />{" "}
         </Surface>
 
         <Tabs defaultValue="orders">
