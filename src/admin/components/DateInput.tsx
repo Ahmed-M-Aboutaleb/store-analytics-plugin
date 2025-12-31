@@ -1,13 +1,7 @@
 import { Text, DatePicker, Tabs } from "@medusajs/ui";
 import { Preset } from "../../api/admin/analytics/orders/types";
-import { DateRange } from "../types/index";
-
-type DateInputProps = {
-  value: DateRange;
-  preset: Preset;
-  onChange: (range: DateRange) => void;
-  onPresetChange: (preset: Preset) => void;
-};
+import { useAnalyticsDate } from "../../providers/analytics-date-provider";
+import { resolveRange } from "../../utils/date-range";
 
 const PRESETS: Preset[] = [
   "this-month",
@@ -16,59 +10,25 @@ const PRESETS: Preset[] = [
   "custom",
 ];
 
-const getPresetDateRange = (preset: Preset): DateRange => {
-  const now = new Date();
-  let from: Date = new Date();
-  let to: Date = new Date();
+const DateInput = () => {
+  const { preset, range, setPreset, setRange } = useAnalyticsDate();
 
-  to.setHours(23, 59, 59, 999);
-  switch (preset) {
-    case "this-month":
-      from = new Date(now.getFullYear(), now.getMonth(), 1);
-      from.setHours(0, 0, 0, 0);
-      break;
-
-    case "last-month":
-      from = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-      from.setHours(0, 0, 0, 0);
-      to = new Date(now.getFullYear(), now.getMonth(), 0);
-      to.setHours(23, 59, 59, 999);
-      break;
-
-    case "last-3-months":
-      from = new Date(now.getFullYear(), now.getMonth() - 3, 1);
-      from.setHours(0, 0, 0, 0);
-      break;
-
-    case "custom":
-    default:
-      from.setHours(0, 0, 0, 0);
-      break;
-  }
-
-  return { from: from.toISOString(), to: to.toISOString() };
-};
-
-const DateInput = ({
-  value,
-  preset,
-  onChange,
-  onPresetChange,
-}: DateInputProps) => {
   return (
     <div className="flex flex-col gap-2">
       <Text size="small" weight="plus" className="text-ui-fg-subtle">
         Date Range
       </Text>
 
-      {/* Preset tabs */}
       <Tabs
         value={preset}
         onValueChange={(p) => {
-          const presetValue = p as Preset;
-          onPresetChange(presetValue);
-          if (presetValue !== "custom") {
-            onChange(getPresetDateRange(presetValue));
+          const nextPreset = p as Preset;
+          setPreset(nextPreset);
+
+          if (nextPreset !== "custom") {
+            setRange(resolveRange(nextPreset));
+          } else {
+            setRange({ from: undefined, to: undefined });
           }
         }}
       >
@@ -81,7 +41,6 @@ const DateInput = ({
         </Tabs.List>
       </Tabs>
 
-      {/* Custom date pickers */}
       {preset === "custom" && (
         <div className="flex items-end gap-4 mt-2">
           <div className="flex flex-col gap-1">
@@ -90,13 +49,13 @@ const DateInput = ({
             </Text>
             <DatePicker
               className="w-[160px]"
-              value={value.from ? new Date(value.from) : null}
-              onChange={(date) =>
-                onChange({
-                  from: date ? date.toISOString() : value.from,
-                  to: value.to,
-                })
-              }
+              value={range.from ? new Date(range.from) : null}
+              onChange={(date) => {
+                setRange((prev) => ({
+                  from: date ? date.toISOString() : undefined,
+                  to: prev?.to,
+                }));
+              }}
             />
           </div>
 
@@ -106,13 +65,13 @@ const DateInput = ({
             </Text>
             <DatePicker
               className="w-[160px]"
-              value={value.to ? new Date(value.to) : null}
-              onChange={(date) =>
-                onChange({
-                  from: value.from,
-                  to: date ? date.toISOString() : value.to,
-                })
-              }
+              value={range.to ? new Date(range.to) : null}
+              onChange={(date) => {
+                setRange((prev) => ({
+                  from: prev?.from,
+                  to: date ? date.toISOString() : undefined,
+                }));
+              }}
             />
           </div>
         </div>

@@ -6,29 +6,26 @@ import OrdersTab from "../../components/OrderTab";
 import ProductsTab from "../../components/ProductTab";
 import Surface from "../../components/Surface";
 import DateInput from "../../components/DateInput";
-import { DateRange } from "../../types/index";
-import { Preset } from "../../../api/admin/analytics/orders/types";
+import {
+  AnalyticsDateProvider,
+  useAnalyticsDate,
+} from "../../../providers/analytics-date-provider"; // provider + hook
 
-const AnalyticsPage = () => {
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: undefined,
-    to: undefined,
-  });
-  const [preset, setPreset] = useState<Preset>("this-month");
-  // const [data, setData] = useState<any>(null);
+const AnalyticsContent = () => {
+  const { preset, range } = useAnalyticsDate();
 
   useEffect(() => {
-    if (preset === "custom" && (!dateRange.from || !dateRange.to)) {
+    if (preset === "custom" && (!range.from || !range.to)) {
       return;
     }
     const fetchAnalytics = async () => {
-      if (preset === "custom" && (!dateRange.from || !dateRange.to)) return;
+      if (preset === "custom" && (!range.from || !range.to)) return;
 
       const params = new URLSearchParams();
       params.set("preset", preset);
       if (preset === "custom") {
-        params.set("from", dateRange.from!);
-        params.set("to", dateRange.to!);
+        params.set("from", range.from!);
+        params.set("to", range.to!);
       }
 
       try {
@@ -42,7 +39,7 @@ const AnalyticsPage = () => {
     };
 
     fetchAnalytics();
-  }, [preset, dateRange.from, dateRange.to]);
+  }, [preset, range.from, range.to]);
 
   return (
     <Container className="divide-y p-0">
@@ -60,14 +57,7 @@ const AnalyticsPage = () => {
 
       <div className="space-y-5 px-6 py-5">
         <Surface>
-          <DateInput
-            preset={preset}
-            onPresetChange={(p) => setPreset(p)}
-            value={dateRange}
-            onChange={(range) => {
-              setDateRange(range);
-            }}
-          />{" "}
+          <DateInput />
         </Surface>
 
         <Tabs defaultValue="orders">
@@ -75,6 +65,7 @@ const AnalyticsPage = () => {
             <Tabs.Trigger value="orders">Orders</Tabs.Trigger>
             <Tabs.Trigger value="products">Products</Tabs.Trigger>
           </Tabs.List>
+
           <Divider className="mt-4 mb-4" />
           <Tabs.Content value="orders" className="pt-4">
             <OrdersTab />
@@ -86,6 +77,14 @@ const AnalyticsPage = () => {
         </Tabs>
       </div>
     </Container>
+  );
+};
+
+const AnalyticsPage = () => {
+  return (
+    <AnalyticsDateProvider>
+      <AnalyticsContent />
+    </AnalyticsDateProvider>
   );
 };
 
