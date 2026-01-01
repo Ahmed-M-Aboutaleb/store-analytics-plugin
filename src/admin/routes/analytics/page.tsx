@@ -49,7 +49,7 @@ const AnalyticsContent = () => {
             Analytics
           </Heading>
           <Text size="small" className="text-ui-fg-subtle">
-            Overview of product performance and customer growth.{" "}
+            Overview of product performance and customer growth.
           </Text>
         </div>
         <ChartBar className="h-5 w-5 text-ui-fg-muted" />
