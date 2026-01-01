@@ -1,13 +1,19 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { DateRange } from "../types";
-import { Preset, PRESETS } from "../../api/admin/analytics/orders/types";
+import {
+  CurrencySelector,
+  Preset,
+  PRESETS,
+} from "../../api/admin/analytics/orders/types";
 import { resolveRange } from "../../utils/date-range";
 
 type AnalyticsDateContextValue = {
   preset: Preset;
   range: DateRange;
+  currency: CurrencySelector;
   setPreset: React.Dispatch<React.SetStateAction<Preset>>;
   setRange: React.Dispatch<React.SetStateAction<DateRange>>;
+  setCurrency: React.Dispatch<React.SetStateAction<CurrencySelector>>;
 };
 
 const AnalyticsDateContext =
@@ -22,6 +28,7 @@ export const AnalyticsDateProvider = ({
   const [range, setRange] = useState<DateRange>(() =>
     resolveRange("this-month")
   );
+  const [currency, setCurrency] = useState<CurrencySelector>("original");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -55,7 +62,7 @@ export const AnalyticsDateProvider = ({
 
   return (
     <AnalyticsDateContext.Provider
-      value={{ preset, setPreset, range, setRange }}
+      value={{ preset, setPreset, range, setRange, currency, setCurrency }}
     >
       {children}
     </AnalyticsDateContext.Provider>
@@ -73,8 +80,8 @@ export const useAnalyticsDateContext = () => {
 };
 
 export const useAnalyticsDate = () => {
-  const { preset, range, setPreset, setRange } =
+  const { preset, range, setPreset, setRange, currency, setCurrency } =
     useAnalyticsDateContext();
 
-  return { preset, range, setPreset, setRange };
+  return { preset, range, setPreset, setRange, currency, setCurrency };
 };

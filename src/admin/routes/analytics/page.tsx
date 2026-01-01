@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
 import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
@@ -8,39 +7,10 @@ import Surface from "../../components/Surface";
 import DateInput from "../../components/DateInput";
 import {
   AnalyticsDateProvider,
-  useAnalyticsDate,
 } from "../../providers/analytics-date-provider";
+import { GlobalDataProvider } from "../../providers/data-provider";
 
 const AnalyticsContent = () => {
-  const { preset, range } = useAnalyticsDate();
-
-  useEffect(() => {
-    if (preset === "custom" && (!range.from || !range.to)) {
-      return;
-    }
-    const fetchAnalytics = async () => {
-      if (preset === "custom" && (!range.from || !range.to)) return;
-
-      const params = new URLSearchParams();
-      params.set("preset", preset);
-      if (preset === "custom") {
-        params.set("from", range.from!);
-        params.set("to", range.to!);
-      }
-
-      try {
-        const res = await fetch(`/admin/analytics/orders?${params.toString()}`);
-        const json = await res.json();
-        console.log(json);
-        // setData(json);
-      } catch (err) {
-        console.error("Analytics fetch error:", err);
-      }
-    };
-
-    fetchAnalytics();
-  }, [preset, range.from, range.to]);
-
   return (
     <Container className="divide-y p-0">
       <div className="flex items-center justify-between px-6 py-4">
@@ -83,7 +53,9 @@ const AnalyticsContent = () => {
 const AnalyticsPage = () => {
   return (
     <AnalyticsDateProvider>
-      <AnalyticsContent />
+      <GlobalDataProvider>
+        <AnalyticsContent />
+      </GlobalDataProvider>
     </AnalyticsDateProvider>
   );
 };

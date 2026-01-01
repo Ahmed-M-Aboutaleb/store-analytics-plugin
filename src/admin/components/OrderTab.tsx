@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
 import Surface from "./Surface";
@@ -10,15 +10,12 @@ import {
 } from "../../api/admin/analytics/orders/types";
 import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
-import { sdk } from "../../utils/sdk";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
+import { useGlobalAnalyticsData } from "../providers/data-provider";
 
 const OrdersTab = () => {
-  const { preset, range } = useAnalyticsDate();
-  const currency: CurrencySelector = "original";
-  const [data, setData] = useState<OrdersResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { preset, range, currency } = useAnalyticsDate();
+  const { ordersData: data, loading, error } = useGlobalAnalyticsData();
 
   const shortDate = (value: string | number) => {
     const d = new Date(value);
@@ -43,38 +40,6 @@ const OrdersTab = () => {
     }
     return formatPresetLabel(preset);
   }, [preset, range.from, range.to]);
-
-  const fetchData = useCallback(async () => {
-    if (preset === "custom" && (!range.from || !range.to)) {
-      setData(null);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    try {
-      const query: Record<string, string> = { preset, currency };
-
-      if (preset === "custom" && range.from && range.to) {
-        query.from = range.from;
-        query.to = range.to;
-      }
-
-      const body = await sdk.client.fetch<OrdersResponse>("/admin/analytics/orders", {
-        query,
-      });
-      setData(body);
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to load";
-      setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [currency, preset, range.from, range.to]);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   const latestCurrency = useMemo(
     () => data?.orders.data[0]?.currency_code ?? "USD",
