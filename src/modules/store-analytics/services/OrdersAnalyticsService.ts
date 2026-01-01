@@ -123,6 +123,12 @@ export class OrdersAnalyticsService {
     totalSales: number;
     ordersOverTime: Map<string, number>;
     salesOverTime: Map<string, number>;
+    rows: Array<{
+      day: Date | string;
+      currency_code: string | null;
+      orders: string | number | null;
+      sales: string | number | null;
+    }>;
   }> {
     const latestSummary = this.pgConnection("order_summary as os_latest")
       .select("order_id")
@@ -138,6 +144,7 @@ export class OrdersAnalyticsService {
           .andOnNull("os.deleted_at");
       })
       .select(this.pgConnection.raw(`date_trunc('day', o.created_at) as day`))
+      .select("o.currency_code")
       .count<{ orders: string }>({ orders: "o.id" })
       .select(
         this.pgConnection.raw(
@@ -146,7 +153,7 @@ export class OrdersAnalyticsService {
       )
       .where("o.created_at", ">=", from)
       .andWhere("o.created_at", "<=", to)
-      .groupBy("day")
+      .groupBy("day", "o.currency_code")
       .orderBy("day", "asc");
 
     let totalOrders = 0;
@@ -156,6 +163,7 @@ export class OrdersAnalyticsService {
 
     type KpiRow = {
       day: Date | string;
+      currency_code: string | null;
       orders: string | number | null;
       sales: string | number | null;
     };
@@ -168,11 +176,17 @@ export class OrdersAnalyticsService {
       const sales = Number(row.sales ?? 0) || 0;
       totalOrders += orders;
       totalSales += sales;
-      ordersOverTime.set(day, orders);
-      salesOverTime.set(day, sales);
+      ordersOverTime.set(day, (ordersOverTime.get(day) ?? 0) + orders);
+      salesOverTime.set(day, (salesOverTime.get(day) ?? 0) + sales);
     }
 
-    return { totalOrders, totalSales, ordersOverTime, salesOverTime };
+    return {
+      totalOrders,
+      totalSales,
+      ordersOverTime,
+      salesOverTime,
+      rows: typedRows,
+    };
   }
 
   async getCountryTotals(
@@ -202,7 +216,11 @@ export class OrdersAnalyticsService {
       })
       .leftJoin({ sa: "order_address" }, "sa.id", "o.shipping_address_id")
       .leftJoin({ ba: "order_address" }, "ba.id", "o.billing_address_id")
-      .select(this.pgConnection.raw("COALESCE(sa.country_code, ba.country_code) as country_code"))
+      .select(
+        this.pgConnection.raw(
+          "COALESCE(sa.country_code, ba.country_code) as country_code"
+        )
+      )
       .select("o.currency_code")
       .sum({
         amount: this.pgConnection.raw(
@@ -216,7 +234,9 @@ export class OrdersAnalyticsService {
       })
       .whereBetween("o.created_at", [from, to])
       .whereIn("o.status", allowedStatuses)
-      .groupByRaw("COALESCE(sa.country_code, ba.country_code), o.currency_code");
+      .groupByRaw(
+        "COALESCE(sa.country_code, ba.country_code), o.currency_code"
+      );
 
     return rows.map((row: any) => ({
       country_code: row.country_code ?? null,

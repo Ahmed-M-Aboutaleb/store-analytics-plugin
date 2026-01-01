@@ -67,15 +67,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const warnings: string[] = [];
     const converter = resolveConverter(req.scope, currency, warnings);
 
+    const shouldConvert = currency !== "original" && converter !== null;
+    const kpisPromise = storeAnalytics.getOrdersKpis(rangeFrom, rangeTo);
+
     const [
-      { totalOrders, totalSales, ordersOverTime, salesOverTime },
+      { totalOrders, totalSales, ordersOverTime, salesOverTime, rows },
       ordersPage,
     ] = await Promise.all([
-      storeAnalytics.getOrdersKpis(rangeFrom, rangeTo),
+      kpisPromise,
       fetchOrdersPage(orderService, filters, limit, offset),
     ]);
-
-    const shouldConvert = currency !== "original" && converter !== null;
     const dataWithConversion = await Promise.all(
       ordersPage.data.map(async (order) => {
         if (!shouldConvert) {
@@ -86,6 +87,66 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         return convertOrderAmounts(order, currency, converter, orderDate);
       })
     );
+
+    // Guard against mixed-currency KPIs/charts when viewing "original" values.
+    const currencySet = new Set(
+      dataWithConversion
+        .map((o) => o.currency_code)
+        .filter(Boolean)
+        .map((c) => (c as string).toUpperCase())
+    );
+
+    let effectiveTotalSales = totalSales;
+    let effectiveSalesOverTime = salesOverTime;
+    if (currency === "original" && currencySet.size > 1) {
+      warnings.push(
+        "Mixed order currencies detected. KPIs and sales charts are hidden in original mode; select a target currency to view totals."
+      );
+      effectiveTotalSales = 0;
+      effectiveSalesOverTime = new Map();
+    }
+
+    if (shouldConvert && converter) {
+      effectiveTotalSales = 0;
+      effectiveSalesOverTime = new Map();
+
+      const rateCache = new Map<string, number>();
+      const convertSales = async (
+        amount: number,
+        fromCurrency: string | null,
+        dayIso: string
+      ) => {
+        if (!fromCurrency) return 0;
+        const key = `${dayIso}|${fromCurrency.toUpperCase()}|${currency}`;
+        const cached = rateCache.get(key);
+        if (cached !== undefined) return amount * cached;
+        const rate = await converter.convert(
+          1,
+          fromCurrency,
+          currency,
+          new Date(dayIso)
+        );
+        rateCache.set(key, rate);
+        return amount * rate;
+      };
+
+      await Promise.all(
+        rows.map(async (row) => {
+          const dayIso = new Date(row.day as any).toISOString().slice(0, 10);
+          const sales = Number(row.sales ?? 0) || 0;
+          const converted = await convertSales(
+            sales,
+            row.currency_code,
+            dayIso
+          );
+          effectiveTotalSales += converted;
+          effectiveSalesOverTime.set(
+            dayIso,
+            (effectiveSalesOverTime.get(dayIso) ?? 0) + converted
+          );
+        })
+      );
+    }
 
     let countryTotals: OrdersResponse["country_totals"] | undefined;
     if (includeCountryTotals) {
@@ -161,11 +222,23 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         { amount: 0, fees: 0, net: 0 }
       );
 
-      let perCurrencyTotals: OrdersResponse["country_totals"] extends { per_currency_totals?: infer T }
+      let perCurrencyTotals: OrdersResponse["country_totals"] extends {
+        per_currency_totals?: infer T;
+      }
         ? T
-        : Array<{ currency_code: string | null; amount: number; fees: number; net: number }> | undefined;
+        :
+            | Array<{
+                currency_code: string | null;
+                amount: number;
+                fees: number;
+                net: number;
+              }>
+            | undefined;
       if (!shouldConvert && originalCurrencies.size > 1) {
-        const map = new Map<string, { amount: number; fees: number; net: number }>();
+        const map = new Map<
+          string,
+          { amount: number; fees: number; net: number }
+        >();
         rows.forEach((row) => {
           const code = (row.currency_code ?? "UNKNOWN").toUpperCase();
           const current = map.get(code) ?? { amount: 0, fees: 0, net: 0 };
@@ -174,12 +247,14 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
           current.net += row.net;
           map.set(code, current);
         });
-        perCurrencyTotals = Array.from(map.entries()).map(([currency_code, totals]) => ({
-          currency_code,
-          amount: totals.amount,
-          fees: totals.fees,
-          net: totals.net,
-        }));
+        perCurrencyTotals = Array.from(map.entries()).map(
+          ([currency_code, totals]) => ({
+            currency_code,
+            amount: totals.amount,
+            fees: totals.fees,
+            net: totals.net,
+          })
+        );
       }
 
       countryTotals = {
@@ -195,11 +270,11 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       currency,
       kpis: {
         total_orders: totalOrders,
-        total_sales: totalSales,
+        total_sales: effectiveTotalSales,
       },
       series: {
         orders: mapToSeries(ordersOverTime),
-        sales: mapToSeries(salesOverTime),
+        sales: mapToSeries(effectiveSalesOverTime),
       },
       orders: {
         count: ordersPage.count,
