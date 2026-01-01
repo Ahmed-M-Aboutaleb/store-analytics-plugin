@@ -21,6 +21,7 @@ type LineChartProps = {
   yAxisTickFormatter?: (value: number) => string;
   tooltipLabelFormatter?: (value: string | number) => string;
   yAxisDomain?: [number | "dataMin" | "auto", number | "dataMax" | "auto"];
+  xDomain?: [string | number, string | number];
 };
 
 export const LineChart: React.FC<LineChartProps> = ({
@@ -32,6 +33,7 @@ export const LineChart: React.FC<LineChartProps> = ({
   yAxisTickFormatter,
   tooltipLabelFormatter,
   yAxisDomain,
+  xDomain,
 }) => {
   const isDark = useDarkMode();
 
@@ -56,6 +58,7 @@ export const LineChart: React.FC<LineChartProps> = ({
               tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
               tickMargin={10}
               tickFormatter={xAxisTickFormatter}
+              domain={xDomain}
             />
             <YAxis
               tickFormatter={yAxisTickFormatter}
@@ -126,6 +129,7 @@ export const LineChart: React.FC<LineChartProps> = ({
           tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickMargin={10}
           tickFormatter={xAxisTickFormatter}
+          domain={xDomain}
         />
         <YAxis
           tickFormatter={yAxisTickFormatter}

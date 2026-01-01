@@ -20,6 +20,7 @@ type BarChartProps<T extends Record<string, unknown>> = {
   yAxisTickFormatter?: (value: number) => string;
   useStableColors?: boolean;
   colorKeyField?: keyof T;
+  xDomain?: [string | number, string | number];
 };
 
 export const BarChart = <T extends Record<string, unknown>>({
@@ -30,6 +31,7 @@ export const BarChart = <T extends Record<string, unknown>>({
   yAxisTickFormatter,
   useStableColors = false,
   colorKeyField,
+  xDomain,
 }: BarChartProps<T>) => {
   const isDark = useDarkMode();
 
@@ -54,6 +56,7 @@ export const BarChart = <T extends Record<string, unknown>>({
           axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickMargin={10}
+          domain={xDomain}
         />
         <YAxis
           tickFormatter={yAxisTickFormatter}

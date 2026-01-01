@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
 import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
@@ -9,7 +9,7 @@ import DateInput from "../../components/DateInput";
 import {
   AnalyticsDateProvider,
   useAnalyticsDate,
-} from "../../../providers/analytics-date-provider"; // provider + hook
+} from "../../providers/analytics-date-provider";
 
 const AnalyticsContent = () => {
   const { preset, range } = useAnalyticsDate();

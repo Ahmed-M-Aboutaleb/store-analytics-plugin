@@ -6,9 +6,9 @@ export const asDateISOString = (value: Date) => value.toISOString();
 export const startOfUTC = (date: Date) =>
   new Date(
     Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
       0,
       0,
       0,
@@ -19,9 +19,9 @@ export const startOfUTC = (date: Date) =>
 export const endOfUTC = (date: Date) =>
   new Date(
     Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate(),
       23,
       59,
       59,

@@ -11,24 +11,58 @@ import {
 import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
 import { sdk } from "../../utils/sdk";
+import { useAnalyticsDate } from "../providers/analytics-date-provider";
 
 const OrdersTab = () => {
-  const preset: Preset = "this-month";
+  const { preset, range } = useAnalyticsDate();
   const currency: CurrencySelector = "original";
   const [data, setData] = useState<OrdersResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const shortDate = (value: string | number) => {
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return String(value);
+    return new Intl.DateTimeFormat(undefined, {
+      month: "short",
+      day: "numeric",
+      timeZone: "UTC",
+    }).format(d);
+  };
+
+  const formatPresetLabel = (value: Preset): string =>
+    value
+      .split("-")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const presetLabel = useMemo(() => {
+    if (preset === "custom") {
+      if (!range.from || !range.to) return "Custom (select range)";
+      return `${shortDate(range.from)} – ${shortDate(range.to)}`;
+    }
+    return formatPresetLabel(preset);
+  }, [preset, range.from, range.to]);
+
   const fetchData = useCallback(async () => {
+    if (preset === "custom" && (!range.from || !range.to)) {
+      setData(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     try {
-      const body = await sdk.client.fetch<OrdersResponse>(
-        "/admin/analytics/orders",
-        {
-          query: { preset, currency },
-        }
-      );
+      const query: Record<string, string> = { preset, currency };
+
+      if (preset === "custom" && range.from && range.to) {
+        query.from = range.from;
+        query.to = range.to;
+      }
+
+      const body = await sdk.client.fetch<OrdersResponse>("/admin/analytics/orders", {
+        query,
+      });
       setData(body);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to load";
@@ -36,7 +70,7 @@ const OrdersTab = () => {
     } finally {
       setLoading(false);
     }
-  }, [currency, preset]);
+  }, [currency, preset, range.from, range.to]);
 
   useEffect(() => {
     fetchData();
@@ -48,8 +82,31 @@ const OrdersTab = () => {
   );
 
   const displayCurrency = currency === "original" ? latestCurrency : currency;
-  const ordersSeries = data?.series.orders ?? [];
-  const salesSeries = data?.series.sales ?? [];
+  const clampSeriesToRange = useCallback(
+    (series: OrdersResponse["series"][keyof OrdersResponse["series"]]) => {
+      if (!series) return [];
+      const from = range.from ? new Date(range.from) : null;
+      const to = range.to ? new Date(range.to) : null;
+
+      return series.filter(({ date }) => {
+        const current = new Date(date);
+        if (Number.isNaN(current.getTime())) return false;
+        if (from && current < from) return false;
+        if (to && current > to) return false;
+        return true;
+      });
+    },
+    [range.from, range.to]
+  );
+
+  const ordersSeries = useMemo(
+    () => clampSeriesToRange(data?.series.orders ?? []),
+    [clampSeriesToRange, data?.series.orders]
+  );
+  const salesSeries = useMemo(
+    () => clampSeriesToRange(data?.series.sales ?? []),
+    [clampSeriesToRange, data?.series.sales]
+  );
 
   const numberFormatter = useMemo(() => createIntegerFormatter(), []);
 
@@ -57,12 +114,6 @@ const OrdersTab = () => {
     () => createCurrencyFormatter(displayCurrency),
     [displayCurrency]
   );
-
-  const shortDate = (value: string | number) => {
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return String(value);
-    return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  };
 
   return (
     <div className="space-y-4">
@@ -74,7 +125,7 @@ const OrdersTab = () => {
             {error && <Badge color="red">Error</Badge>}
           </div>
           <Text size="small" className="text-ui-fg-subtle">
-            Preset: This month (fixed) · Currency: Original
+            Preset: {presetLabel} · Currency: {currency}
           </Text>
         </div>
       </Surface>
@@ -127,8 +178,8 @@ const OrdersTab = () => {
 
       <Surface>
         <div className="grid gap-6 md:grid-cols-2">
-          <div>
-            <Heading level="h3" className="mb-2 text-center">
+          <div className="text-center">
+            <Heading level="h3" className="mb-2">
               Orders Over Time
             </Heading>
             {ordersSeries.length ? (
@@ -148,8 +199,8 @@ const OrdersTab = () => {
               <Text>No data</Text>
             )}
           </div>
-          <div>
-            <Heading level="h3" className="mb-2 text-center">
+          <div className="text-center">
+            <Heading level="h3" className="mb-2">
               Sales Over Time
             </Heading>
             {salesSeries.length ? (
