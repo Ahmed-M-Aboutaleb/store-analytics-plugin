@@ -10,6 +10,13 @@ const PRESETS: Preset[] = [
   "custom",
 ];
 
+const formatPresetLabel = (preset: Preset): string => {
+  return preset
+    .split("-")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 const DateInput = () => {
   const { preset, range, setPreset, setRange } = useAnalyticsDate();
 
@@ -35,7 +42,7 @@ const DateInput = () => {
         <Tabs.List className="gap-2">
           {PRESETS.map((p) => (
             <Tabs.Trigger key={p} value={p}>
-              {p.replace("-", " ").toUpperCase()}
+              {formatPresetLabel(p)}
             </Tabs.Trigger>
           ))}
         </Tabs.List>
