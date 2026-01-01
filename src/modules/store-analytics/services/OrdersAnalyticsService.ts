@@ -124,7 +124,6 @@ export class OrdersAnalyticsService {
     ordersOverTime: Map<string, number>;
     salesOverTime: Map<string, number>;
   }> {
-    // Grab the most recent order_summary per order so we sum the current totals.
     const latestSummary = this.pgConnection("order_summary as os_latest")
       .select("order_id")
       .max<{ version: number }>("version as version")

@@ -12,6 +12,7 @@ import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
 import { useGlobalAnalyticsData } from "../providers/data-provider";
+import OrdersTable from "./OrdersTable";
 
 const OrdersTab = () => {
   const { preset, range, currency } = useAnalyticsDate();
@@ -194,9 +195,7 @@ const OrdersTab = () => {
           Recent Orders
         </Heading>
         <Divider className="my-3" />
-        <Text size="small" className="text-ui-fg-subtle">
-          Order table temporarily removed while context wiring is built.
-        </Text>
+        <OrdersTable />
       </Surface>
     </div>
   );

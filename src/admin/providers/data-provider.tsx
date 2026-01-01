@@ -14,7 +14,9 @@ type GlobalDataContext = {
     ordersData: OrdersResponse | null;
     loading: boolean;
     error: string | null;
-    refreshOrdersData: () => Promise<void>;
+    limit: number;
+    offset: number;
+    refreshOrdersData: (options?: { offset?: number; limit?: number }) => Promise<void>;
 };
 
 const GlobalDataContext = createContext<GlobalDataContext | null>(null);
@@ -27,9 +29,13 @@ export const GlobalDataProvider = ({
     const [ordersData, setOrdersData] = useState<OrdersResponse | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [limit, setLimit] = useState(10);
+    const [offset, setOffset] = useState(0);
     const requestIdRef = useRef(0);
+    const limitRef = useRef(limit);
+    const offsetRef = useRef(offset);
     const { preset, range, currency } = useAnalyticsDate();
-    const refreshOrdersData = useCallback(async () => {
+    const refreshOrdersData = useCallback(async (options?: { offset?: number; limit?: number }) => {
         if (preset === "custom" && (!range.from || !range.to)) {
             setOrdersData(null);
             setError(null);
@@ -37,12 +43,25 @@ export const GlobalDataProvider = ({
             return;
         }
 
+        const nextLimit = options?.limit ?? limitRef.current;
+        const nextOffset = options?.offset ?? offsetRef.current;
+
+        limitRef.current = nextLimit;
+        offsetRef.current = nextOffset;
+        setLimit(nextLimit);
+        setOffset(nextOffset);
+
         const requestId = ++requestIdRef.current;
         setLoading(true);
         setError(null);
 
         try {
-            const query: Record<string, string> = { preset, currency };
+            const query: Record<string, string> = {
+                preset,
+                currency,
+                limit: String(nextLimit),
+                offset: String(nextOffset),
+            };
             if (preset === "custom" && range.from && range.to) {
                 query.from = range.from;
                 query.to = range.to;
@@ -70,10 +89,12 @@ export const GlobalDataProvider = ({
     }, [currency, preset, range.from, range.to]);
 
     useEffect(() => {
-        refreshOrdersData();    
+        refreshOrdersData({ offset: 0 });    
     }, [refreshOrdersData]);
     return (
-        <GlobalDataContext.Provider value={{ ordersData, refreshOrdersData, loading, error }}>
+        <GlobalDataContext.Provider
+            value={{ ordersData, refreshOrdersData, loading, error, limit, offset }}
+        >
             {children}
         </GlobalDataContext.Provider>
     );
