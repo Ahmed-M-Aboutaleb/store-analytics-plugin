@@ -41,4 +41,12 @@ export default class StoreAnalyticsModuleService {
   async getOrdersKpis(from: Date, to: Date) {
     return this.ordersAnalyticsService_.getOrdersKpis(from, to);
   }
+
+  async getCountryTotals(from: Date, to: Date, allowedStatuses: string[]) {
+    return this.ordersAnalyticsService_.getCountryTotals(
+      from,
+      to,
+      allowedStatuses
+    );
+  }
 }

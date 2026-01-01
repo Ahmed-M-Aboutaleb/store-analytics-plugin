@@ -62,6 +62,27 @@ export type OrdersResponse = {
       };
     }>;
   };
+  country_totals?: {
+    rows: Array<{
+      country_code: string | null;
+      currency_code: string | null;
+      amount: number;
+      fees: number;
+      net: number;
+    }>;
+    totals: {
+      amount: number;
+      fees: number;
+      net: number;
+    };
+    per_currency_totals?: Array<{
+      currency_code: string | null;
+      amount: number;
+      fees: number;
+      net: number;
+    }>;
+    normalized: boolean;
+  };
   warnings?: string[];
 };
 

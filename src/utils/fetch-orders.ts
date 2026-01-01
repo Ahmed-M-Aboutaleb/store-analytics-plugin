@@ -66,3 +66,28 @@ export async function fetchOrdersPage(
 
   return { data, count };
 }
+
+export async function fetchAllOrders(
+  orderService: IOrderModuleService,
+  filters: FilterableOrderProps,
+  pageSize = 200
+): Promise<OrdersResponse["orders"]["data"]> {
+  let offset = 0;
+  let results: OrdersResponse["orders"]["data"] = [];
+  // Use paging to avoid large single queries
+  // and to honor potential service-level limits.
+  while (true) {
+    const { data, count } = await fetchOrdersPage(
+      orderService,
+      filters,
+      pageSize,
+      offset
+    );
+    results = results.concat(data);
+    offset += pageSize;
+    if (results.length >= count) {
+      break;
+    }
+  }
+  return results;
+}

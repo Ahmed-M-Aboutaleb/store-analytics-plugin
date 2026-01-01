@@ -61,6 +61,7 @@ export const GlobalDataProvider = ({
                 currency,
                 limit: String(nextLimit),
                 offset: String(nextOffset),
+                country_summary: "true",
             };
             if (preset === "custom" && range.from && range.to) {
                 query.from = range.from;
