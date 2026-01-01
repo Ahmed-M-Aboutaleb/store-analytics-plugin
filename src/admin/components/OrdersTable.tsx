@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from "@medusajs/icons";
 import {
 	ALLOWED_CURRENCIES,
 	CurrencySelector,
+	OrdersResponse,
 } from "../../api/admin/analytics/orders/types";
 import { formatCurrency } from "../../utils/money";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
@@ -166,7 +167,7 @@ const OrdersTable = () => {
 					<tbody>
 						{orders.length === 0 ? (
 							<tr>
-								<td className="px-3 py-4 text-ui-fg-subtle" colSpan={7}>
+								<td className="px-3 py-4 text-ui-fg-subtle" colSpan={8}>
 									{loading ? "Loading orders..." : "No orders found"}
 								</td>
 							</tr>

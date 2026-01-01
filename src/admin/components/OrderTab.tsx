@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
 import Surface from "./Surface";
@@ -195,7 +195,8 @@ const OrdersTab = () => {
           Recent Orders
         </Heading>
         <Divider className="my-3" />
-        <OrdersTable />
+        <OrdersTable
+        />
       </Surface>
 
       <Surface>

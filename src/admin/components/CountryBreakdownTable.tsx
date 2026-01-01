@@ -141,7 +141,7 @@ const CountryBreakdownTable = () => {
         <div className="mt-2 text-xs text-ui-fg-subtle">
           Totals per currency (not converted):
           {perCurrencyTotals && perCurrencyTotals.length > 0 && (
-            <div className="flex flex-wrap gap-2 text-xs text-ui-fg-subtle">
+            <div className="flex flex-wrap mt-2 gap-2 text-xs text-ui-fg-subtle">
               {perCurrencyTotals.map((t) => (
                 <span key={t.currency_code || "UNKNOWN"} className="rounded-md bg-ui-bg-field px-2 py-1">
                   {t.currency_code ?? "Unknown"}: {formatMoney(t.amount, t.currency_code)} net {formatMoney(t.net, t.currency_code)}

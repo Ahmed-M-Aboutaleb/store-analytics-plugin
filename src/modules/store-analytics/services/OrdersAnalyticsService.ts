@@ -211,7 +211,7 @@ export class OrdersAnalyticsService {
       })
       .sum({
         fees: this.pgConnection.raw(
-          "COALESCE((o.metadata ->> 'stripe_fees')::numeric, 0)"
+          "COALESCE((o.metadata ->> 'stripe_fee_amount')::numeric, (o.metadata ->> 'stripe_fees')::numeric, (o.metadata ->> 'stripe_fee')::numeric, 0)"
         ) as any,
       })
       .whereBetween("o.created_at", [from, to])
