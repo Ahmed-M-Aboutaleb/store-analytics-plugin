@@ -1125,21 +1125,13 @@
   dependencies:
     tslib "^2.0.0"
 
-"@dnd-kit/core@^6.0.0", "@dnd-kit/core@^6.1.0":
+"@dnd-kit/core@^6.1.0":
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/@dnd-kit/core/-/core-6.3.1.tgz#4c36406a62c7baac499726f899935f93f0e6d003"
   integrity sha512-xkGBRQQab4RLwgXxoqETICr6S5JlogafbhNsidmrkVv2YRs5MLwpjoF2qpiGjQt8S9AoxtIV603s0GIUpY5eYQ==
   dependencies:
     "@dnd-kit/accessibility" "^3.1.1"
     "@dnd-kit/utilities" "^3.2.2"
-    tslib "^2.0.0"
-
-"@dnd-kit/sortable@^7.0.0":
-  version "7.0.2"
-  resolved "https://registry.yarnpkg.com/@dnd-kit/sortable/-/sortable-7.0.2.tgz#791d550872457f3f3c843e00d159b640f982011c"
-  integrity sha512-wDkBHHf9iCi1veM834Gbk1429bd4lHX4RpAwT0y2cHLf246GAvU2sVw/oxWNpPKQNQRQaeGXhAVgrOl1IT+iyA==
-  dependencies:
-    "@dnd-kit/utilities" "^3.2.0"
     tslib "^2.0.0"
 
 "@dnd-kit/sortable@^8.0.0":
@@ -1150,7 +1142,7 @@
     "@dnd-kit/utilities" "^3.2.2"
     tslib "^2.0.0"
 
-"@dnd-kit/utilities@^3.2.0", "@dnd-kit/utilities@^3.2.2":
+"@dnd-kit/utilities@^3.2.2":
   version "3.2.2"
   resolved "https://registry.yarnpkg.com/@dnd-kit/utilities/-/utilities-3.2.2.tgz#5a32b6af356dc5f74d61b37d6f7129a4040ced7b"
   integrity sha512-+MKAJEOfaBe5SmV6t34p80MMKhjvUz0vRrvVJbPT0WElzaOJ/1xs+D+KDv+tD/NE5ujfrChEcshd4fLn0wpiqg==
@@ -1971,11 +1963,6 @@
   resolved "https://registry.yarnpkg.com/@medusajs/fulfillment/-/fulfillment-2.12.3.tgz#6cb88406375f02ad73b4c7971908ffaa88280062"
   integrity sha512-NN0LGypcdVXbaTnjG5qWM3oBdOzyxm5eNS3rwro4t5k9QoLeOkyvJG1Alo6crOEek8mIZUlnl/B6aPhLbOGMeA==
 
-"@medusajs/icons@2.11.1":
-  version "2.11.1"
-  resolved "https://registry.yarnpkg.com/@medusajs/icons/-/icons-2.11.1.tgz#e629f54c72e5707a739d204066b587319a4cbf22"
-  integrity sha512-XCjCIYy2ZbGQx72pk3ETFT8rSrTt1m+tuGKwIk0mSoW5uhZvnB+wZES4+s4Hcw+GeE2anIgEGe9TLk2ftk9sYA==
-
 "@medusajs/icons@2.12.3":
   version "2.12.3"
   resolved "https://registry.yarnpkg.com/@medusajs/icons/-/icons-2.12.3.tgz#db31c91633d98ac58c45a89e85bcab25da7760da"
@@ -2231,31 +2218,7 @@
   dependencies:
     bignumber.js "^9.1.2"
 
-"@medusajs/ui@4.0.25":
-  version "4.0.25"
-  resolved "https://registry.yarnpkg.com/@medusajs/ui/-/ui-4.0.25.tgz#cac7332f116a5df9d8a1c64d78c9440c2747b221"
-  integrity sha512-VjQPF5my2iBkIww9QR7Cu/CCjo7LSzWIjjcKKAsxcA9VwEmSY+CVPHiNr5bx5aku6Zp6CGHe9yTOomYCR+HWWw==
-  dependencies:
-    "@dnd-kit/core" "^6.0.0"
-    "@dnd-kit/sortable" "^7.0.0"
-    "@dnd-kit/utilities" "^3.2.0"
-    "@medusajs/icons" "2.11.1"
-    "@radix-ui/react-dialog" "1.1.4"
-    "@radix-ui/react-dismissable-layer" "1.1.4"
-    "@tanstack/react-table" "8.20.5"
-    clsx "^1.2.1"
-    copy-to-clipboard "^3.3.3"
-    cva "1.0.0-beta.1"
-    prism-react-renderer "^2.0.6"
-    prismjs "^1.29.0"
-    radix-ui "1.1.2"
-    react-aria "^3.33.1"
-    react-currency-input-field "^3.6.11"
-    react-stately "^3.31.1"
-    sonner "^1.5.0"
-    tailwind-merge "^2.2.1"
-
-"@medusajs/ui@4.0.31":
+"@medusajs/ui@4.0.31", "@medusajs/ui@^4.0.31":
   version "4.0.31"
   resolved "https://registry.yarnpkg.com/@medusajs/ui/-/ui-4.0.31.tgz#2f27e00bde987d9d6bf09e6dbb7247ce125b0821"
   integrity sha512-ZR7ezb4FHiRF2x80SA/j+ZC1SFXA4xp5aTkikSvwjttKjaJyNoid7Kk6EkXV/qgrACzSpfyQKbf1eLW7Dfwkzw==
@@ -9517,11 +9480,6 @@ prism-react-renderer@^2.0.6:
   dependencies:
     "@types/prismjs" "^1.26.0"
     clsx "^2.0.0"
-
-prismjs@^1.29.0:
-  version "1.29.0"
-  resolved "https://registry.yarnpkg.com/prismjs/-/prismjs-1.29.0.tgz#f113555a8fa9b57c35e637bba27509dcf802dd12"
-  integrity sha512-Kx/1w86q/epKcmte75LNrEoT+lX8pBpavuAbvJWRXar7Hz8jrtF+e3vY751p0R8H9HdArwaCTNDDzHg/ScJK1Q==
 
 prismjs@^1.30.0:
   version "1.30.0"
