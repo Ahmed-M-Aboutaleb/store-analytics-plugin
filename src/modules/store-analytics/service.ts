@@ -1,5 +1,5 @@
 import { Logger } from "@medusajs/framework/types";
-import { OrdersAnalyticsService } from "./services";
+import { OrdersAnalyticsService, ProductsAnalyticsService } from "./services";
 import { PgConnectionType } from "./types";
 import { OrderStatus } from "@medusajs/framework/utils";
 
@@ -10,6 +10,7 @@ type InjectedDependencies = {
 
 export default class StoreAnalyticsModuleService {
   protected ordersAnalyticsService_: OrdersAnalyticsService;
+  protected productsAnalyticsService_: ProductsAnalyticsService;
   protected logger_: Logger;
   protected pgConnection: PgConnectionType;
 
@@ -19,6 +20,9 @@ export default class StoreAnalyticsModuleService {
   }: InjectedDependencies) {
     this.ordersAnalyticsService_ = ordersAnalyticsService;
     this.pgConnection = __pg_connection__;
+    this.productsAnalyticsService_ = new ProductsAnalyticsService({
+      __pg_connection__,
+    });
   }
 
   // Orders
@@ -40,5 +44,13 @@ export default class StoreAnalyticsModuleService {
 
   async getOrdersKpis(from: Date, to: Date) {
     return this.ordersAnalyticsService_.getOrdersKpis(from, to);
+  }
+
+  async getNewCustomersOverTime(from: Date, to: Date) {
+    return this.productsAnalyticsService_.getNewCustomersOverTime(from, to);
+  }
+
+  async getTopVariants(from: Date, to: Date, limit?: number) {
+    return this.productsAnalyticsService_.getTopVariants(from, to, limit);
   }
 }
