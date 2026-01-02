@@ -5,9 +5,7 @@ import OrdersTab from "../../components/OrderTab";
 import ProductsTab from "../../components/ProductTab";
 import Surface from "../../components/Surface";
 import DateInput from "../../components/DateInput";
-import {
-  AnalyticsDateProvider,
-} from "../../providers/analytics-date-provider";
+import { AnalyticsDateProvider } from "../../providers/analytics-date-provider";
 import { GlobalDataProvider } from "../../providers/data-provider";
 
 const AnalyticsContent = () => {

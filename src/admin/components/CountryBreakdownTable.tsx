@@ -2,9 +2,11 @@ import { useMemo } from "react";
 import { Badge, Text } from "@medusajs/ui";
 import { formatCurrency } from "../../utils/money";
 import { useGlobalAnalyticsData } from "../providers/data-provider";
+import { useAnalyticsDate } from "../providers/analytics-date-provider";
 
 const CountryBreakdownTable = () => {
   const { ordersData, loading } = useGlobalAnalyticsData();
+  const { currency: selectedCurrency } = useAnalyticsDate();
 
   const countryNames = useMemo(
     () => new Intl.DisplayNames(undefined, { type: "region" }),
@@ -13,10 +15,13 @@ const CountryBreakdownTable = () => {
 
   const displayCurrency = useMemo(() => {
     if (!ordersData) return "USD";
+    if (selectedCurrency !== "original") return selectedCurrency;
     if (ordersData.currency !== "original") return ordersData.currency;
-    const firstCurrency = ordersData.orders.data.find((o) => o.currency_code)?.currency_code;
+    const firstCurrency = ordersData.orders.data.find(
+      (o) => o.currency_code
+    )?.currency_code;
     return (firstCurrency ?? "USD").toUpperCase();
-  }, [ordersData]);
+  }, [ordersData, selectedCurrency]);
 
   const rows = useMemo(() => {
     if (!ordersData) return [];
@@ -32,11 +37,15 @@ const CountryBreakdownTable = () => {
 
     // Fallback: client-side aggregation (should be avoided when server aggregates available).
     const isConverted = ordersData.currency !== "original";
-    const grouped = new Map<string, { amount: number; fees: number; net: number }>();
+    const grouped = new Map<
+      string,
+      { amount: number; fees: number; net: number }
+    >();
     for (const order of ordersData.orders.data) {
       const country = (order.country_code ?? "Unknown").toUpperCase();
       const amount = (isConverted ? order.converted?.total : order.total) ?? 0;
-      const fees = (isConverted ? order.converted?.stripe_fees : order.stripe_fees) ?? 0;
+      const fees =
+        (isConverted ? order.converted?.stripe_fees : order.stripe_fees) ?? 0;
       const net = amount - fees;
       const current = grouped.get(country) ?? { amount: 0, fees: 0, net: 0 };
       current.amount += amount;
@@ -46,7 +55,13 @@ const CountryBreakdownTable = () => {
     }
 
     return Array.from(grouped.entries())
-      .map(([country, { amount, fees, net }]) => ({ country, currency: displayCurrency, amount, fees, net }))
+      .map(([country, { amount, fees, net }]) => ({
+        country,
+        currency: displayCurrency,
+        amount,
+        fees,
+        net,
+      }))
       .sort((a, b) => b.amount - a.amount);
   }, [ordersData, displayCurrency]);
 
@@ -79,7 +94,10 @@ const CountryBreakdownTable = () => {
     }
   };
 
-  const formatMoney = (amount: number | null | undefined, code?: string | null) => {
+  const formatMoney = (
+    amount: number | null | undefined,
+    code?: string | null
+  ) => {
     if (amount === null || amount === undefined) return "—";
     return formatCurrency(amount, code ?? displayCurrency, {
       minimumFractionDigits: 2,
@@ -87,11 +105,17 @@ const CountryBreakdownTable = () => {
     });
   };
 
-  const normalized = ordersData?.country_totals?.normalized ?? ordersData?.currency !== "original";
+  const normalized =
+    ordersData?.country_totals?.normalized ??
+    ordersData?.currency !== "original";
   const perCurrencyTotals = ordersData?.country_totals?.per_currency_totals;
 
   if (!ordersData) {
-    return <Text size="small" className="text-ui-fg-subtle">No data</Text>;
+    return (
+      <Text size="small" className="text-ui-fg-subtle">
+        No data
+      </Text>
+    );
   }
 
   return (
@@ -99,7 +123,8 @@ const CountryBreakdownTable = () => {
       {!normalized && (
         <div className="flex flex-col gap-1">
           <Badge color="orange">
-            Totals are unnormalized (original currencies differ). Select a target currency to normalize.
+            Totals are unnormalized (original currencies differ). Select a
+            target currency to normalize.
           </Badge>
         </div>
       )}
@@ -123,20 +148,50 @@ const CountryBreakdownTable = () => {
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.country} className="border-b border-ui-border-base last:border-0">
+                <tr
+                  key={row.country}
+                  className="border-b border-ui-border-base last:border-0"
+                >
                   <td className="px-3 py-3">{formatCountry(row.country)}</td>
-                  <td className="px-3 py-3">{formatMoney(row.amount, row.currency)}</td>
-                  <td className="px-3 py-3">{formatMoney(row.fees, row.currency)}</td>
-                  <td className="px-3 py-3">{formatMoney(row.net, row.currency)}</td>
+                  <td className="px-3 py-3">
+                    {formatMoney(
+                      row.amount,
+                      selectedCurrency === "original"
+                        ? row.currency
+                        : displayCurrency
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {formatMoney(
+                      row.fees,
+                      selectedCurrency === "original"
+                        ? row.currency
+                        : displayCurrency
+                    )}
+                  </td>
+                  <td className="px-3 py-3">
+                    {formatMoney(
+                      row.net,
+                      selectedCurrency === "original"
+                        ? row.currency
+                        : displayCurrency
+                    )}
+                  </td>
                 </tr>
               ))
             )}
             {rows.length > 0 && normalized && (
               <tr className="bg-ui-bg-subtle font-semibold">
                 <td className="px-3 py-3">Total</td>
-                <td className="px-3 py-3">{formatMoney(totals.amount, displayCurrency)}</td>
-                <td className="px-3 py-3">{formatMoney(totals.fees, displayCurrency)}</td>
-                <td className="px-3 py-3">{formatMoney(totals.net, displayCurrency)}</td>
+                <td className="px-3 py-3">
+                  {formatMoney(totals.amount, displayCurrency)}
+                </td>
+                <td className="px-3 py-3">
+                  {formatMoney(totals.fees, displayCurrency)}
+                </td>
+                <td className="px-3 py-3">
+                  {formatMoney(totals.net, displayCurrency)}
+                </td>
               </tr>
             )}
           </tbody>
@@ -149,8 +204,13 @@ const CountryBreakdownTable = () => {
           {perCurrencyTotals && perCurrencyTotals.length > 0 && (
             <div className="flex flex-wrap mt-2 gap-2 text-xs text-ui-fg-subtle">
               {perCurrencyTotals.map((t) => (
-                <span key={t.currency_code || "UNKNOWN"} className="rounded-md bg-ui-bg-field px-2 py-1">
-                  {t.currency_code ?? "Unknown"}: {formatMoney(t.amount, t.currency_code)} net {formatMoney(t.net, t.currency_code)}
+                <span
+                  key={t.currency_code || "UNKNOWN"}
+                  className="rounded-md bg-ui-bg-field px-2 py-1"
+                >
+                  {t.currency_code ?? "Unknown"}:{" "}
+                  {formatMoney(t.amount, t.currency_code)} net{" "}
+                  {formatMoney(t.net, t.currency_code)}
                 </span>
               ))}
             </div>
