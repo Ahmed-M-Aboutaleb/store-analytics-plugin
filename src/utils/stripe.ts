@@ -1,5 +1,9 @@
 export const parseStripeFees = (metadata?: Record<string, unknown> | null) => {
-  const raw = metadata?.stripe_fee ?? metadata?.stripe_fees;
+  const raw =
+    metadata?.stripe_fee_amount ??
+    metadata?.stripe_fee ??
+    metadata?.stripe_fees;
+
   if (typeof raw === "number") {
     return raw;
   }
@@ -13,6 +17,9 @@ export const parseStripeFees = (metadata?: Record<string, unknown> | null) => {
 export const parseStripeFeeCurrency = (
   metadata?: Record<string, unknown> | null
 ) => {
-  const raw = metadata?.stripe_currency ?? metadata?.stripe_fee_currency;
+  const raw =
+    metadata?.stripe_fee_currency ??
+    metadata?.stripe_currency ??
+    metadata?.stripe_fees_currency;
   return typeof raw === "string" ? raw.toUpperCase() : null;
 };

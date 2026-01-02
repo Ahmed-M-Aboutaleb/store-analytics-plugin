@@ -1,10 +1,9 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
 import Surface from "./Surface";
 import { LineChart } from "./LineChart";
 import {
-  CurrencySelector,
   OrdersResponse,
   Preset,
 } from "../../api/admin/analytics/orders/types";
@@ -12,6 +11,8 @@ import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
 import { useGlobalAnalyticsData } from "../providers/data-provider";
+import OrdersTable from "./OrdersTable";
+import CountryBreakdownTable from "./CountryBreakdownTable";
 
 const OrdersTab = () => {
   const { preset, range, currency } = useAnalyticsDate();
@@ -194,9 +195,16 @@ const OrdersTab = () => {
           Recent Orders
         </Heading>
         <Divider className="my-3" />
-        <Text size="small" className="text-ui-fg-subtle">
-          Order table temporarily removed while context wiring is built.
-        </Text>
+        <OrdersTable
+        />
+      </Surface>
+
+      <Surface>
+        <Heading level="h3" className="mb-2">
+          By Country
+        </Heading>
+        <Divider className="my-3" />
+        <CountryBreakdownTable />
       </Surface>
     </div>
   );

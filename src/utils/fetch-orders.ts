@@ -24,8 +24,15 @@ export async function fetchOrdersPage(
       "tax_total",
       "total",
       "metadata",
+      "shipping_address.id",
+      "shipping_address.country_code",
+      "billing_address.id",
+      "billing_address.country_code",
     ],
-    relations: ["shipping_address"],
+    relations: [
+      "shipping_address",
+      "billing_address",
+    ],
     order: DESC_CREATED_AT,
     take: limit,
     skip: offset,
@@ -38,12 +45,16 @@ export async function fetchOrdersPage(
     const stripeCurrency = parseStripeFeeCurrency(
       order.metadata as Record<string, unknown> | null
     );
+    const countryCode =
+      order.shipping_address?.country_code ??
+      order.billing_address?.country_code ??
+      null;
 
     return {
       id: order.id,
       display_id: order.display_id ?? null,
       created_at: order.created_at,
-      country_code: order.shipping_address?.country_code ?? null,
+      country_code: countryCode,
       currency_code: order.currency_code ?? null,
       subtotal: toNumber(order.subtotal),
       tax_total: toNumber(order.tax_total),
@@ -54,4 +65,29 @@ export async function fetchOrdersPage(
   });
 
   return { data, count };
+}
+
+export async function fetchAllOrders(
+  orderService: IOrderModuleService,
+  filters: FilterableOrderProps,
+  pageSize = 200
+): Promise<OrdersResponse["orders"]["data"]> {
+  let offset = 0;
+  let results: OrdersResponse["orders"]["data"] = [];
+  // Use paging to avoid large single queries
+  // and to honor potential service-level limits.
+  while (true) {
+    const { data, count } = await fetchOrdersPage(
+      orderService,
+      filters,
+      pageSize,
+      offset
+    );
+    results = results.concat(data);
+    offset += pageSize;
+    if (results.length >= count) {
+      break;
+    }
+  }
+  return results;
 }

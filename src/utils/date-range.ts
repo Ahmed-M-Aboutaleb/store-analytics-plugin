@@ -6,9 +6,9 @@ export const asDateISOString = (value: Date) => value.toISOString();
 export const startOfUTC = (date: Date) =>
   new Date(
     Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
       0,
       0,
       0,
@@ -19,9 +19,9 @@ export const startOfUTC = (date: Date) =>
 export const endOfUTC = (date: Date) =>
   new Date(
     Date.UTC(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
       23,
       59,
       59,
@@ -45,7 +45,8 @@ export const getMonthRange = (today: Date, offset: number) => {
 export const resolveRange = (
   preset: Preset,
   from?: string,
-  to?: string
+  to?: string,
+  additionalOffset = false
 ): ResolvedRange => {
   const today = new Date();
   switch (preset) {
@@ -67,13 +68,19 @@ export const resolveRange = (
       return {
         preset,
         from: asDateISOString(startOfUTC(start)),
-        to: asDateISOString(end),
+        to: additionalOffset
+          ? asDateISOString(end)
+          : asDateISOString(endOfUTC(end)),
       };
     }
     case "custom": {
       if (!from || !to) {
         throw new Error("Custom preset requires both 'from' and 'to'");
       }
+      console.log("Logs(date-range: resolveRange): from, to", {
+        from,
+        to,
+      });
       return {
         preset,
         from: asDateISOString(startOfUTC(new Date(from))),

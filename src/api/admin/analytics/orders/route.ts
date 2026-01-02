@@ -38,6 +38,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       req.query.limit,
       req.query.offset
     );
+    const includeCountryTotals = req.query.country_summary === "true";
 
     const range = resolveRange(
       preset,
@@ -46,7 +47,18 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     );
     const rangeFrom = new Date(range.from);
     const rangeTo = new Date(range.to);
-    const filters = buildFilters(range);
+    const allowedStatuses = [
+      "pending",
+      "completed",
+      "archived",
+      "requires_action",
+    ];
+    console.log("Logs(route: /admin/analytics/orders): rangeFrom", rangeFrom);
+    console.log("Logs(route: /admin/analytics/orders): rangeTo", rangeTo);
+    const filters = {
+      ...buildFilters(range),
+      status: allowedStatuses,
+    };
 
     const orderService = req.scope.resolve<IOrderModuleService>(Modules.ORDER);
     const storeAnalytics = req.scope.resolve<StoreAnalyticsModuleService>(
@@ -56,15 +68,16 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     const warnings: string[] = [];
     const converter = resolveConverter(req.scope, currency, warnings);
 
+    const shouldConvert = currency !== "original" && converter !== null;
+    const kpisPromise = storeAnalytics.getOrdersKpis(rangeFrom, rangeTo);
+
     const [
-      { totalOrders, totalSales, ordersOverTime, salesOverTime },
+      { totalOrders, totalSales, ordersOverTime, salesOverTime, rows },
       ordersPage,
     ] = await Promise.all([
-      storeAnalytics.getOrdersKpis(rangeFrom, rangeTo),
+      kpisPromise,
       fetchOrdersPage(orderService, filters, limit, offset),
     ]);
-
-    const shouldConvert = currency !== "original" && converter !== null;
     const dataWithConversion = await Promise.all(
       ordersPage.data.map(async (order) => {
         if (!shouldConvert) {
@@ -76,16 +89,193 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       })
     );
 
+    // Guard against mixed-currency KPIs/charts when viewing "original" values.
+    const currencySet = new Set(
+      dataWithConversion
+        .map((o) => o.currency_code)
+        .filter(Boolean)
+        .map((c) => (c as string).toUpperCase())
+    );
+
+    let effectiveTotalSales = totalSales;
+    let effectiveSalesOverTime = salesOverTime;
+    if (currency === "original" && currencySet.size > 1) {
+      warnings.push(
+        "Mixed order currencies detected. KPIs and sales charts are hidden in original mode; select a target currency to view totals."
+      );
+      effectiveTotalSales = 0;
+      effectiveSalesOverTime = new Map();
+    }
+
+    if (shouldConvert && converter) {
+      effectiveTotalSales = 0;
+      effectiveSalesOverTime = new Map();
+
+      const rateCache = new Map<string, number>();
+      const convertSales = async (
+        amount: number,
+        fromCurrency: string | null,
+        dayIso: string
+      ) => {
+        if (!fromCurrency) return 0;
+        const key = `${dayIso}|${fromCurrency.toUpperCase()}|${currency}`;
+        const cached = rateCache.get(key);
+        if (cached !== undefined) return amount * cached;
+        const rate = await converter.convert(
+          1,
+          fromCurrency,
+          currency,
+          new Date(dayIso)
+        );
+        rateCache.set(key, rate);
+        return amount * rate;
+      };
+
+      await Promise.all(
+        rows.map(async (row) => {
+          const dayIso = new Date(row.day as any).toISOString().slice(0, 10);
+          const sales = Number(row.sales ?? 0) || 0;
+          const converted = await convertSales(
+            sales,
+            row.currency_code,
+            dayIso
+          );
+          effectiveTotalSales += converted;
+          effectiveSalesOverTime.set(
+            dayIso,
+            (effectiveSalesOverTime.get(dayIso) ?? 0) + converted
+          );
+        })
+      );
+    }
+
+    let countryTotals: OrdersResponse["country_totals"] | undefined;
+    if (includeCountryTotals) {
+      const aggregates = await storeAnalytics.getCountryTotals(
+        rangeFrom,
+        rangeTo,
+        allowedStatuses
+      );
+
+      const originalCurrencies = new Set<string>();
+      const midDate = new Date((rangeFrom.getTime() + rangeTo.getTime()) / 2);
+
+      const rows = await Promise.all(
+        aggregates.map(async (row) => {
+          const baseAmount = row.amount ?? 0;
+          const baseFees = row.fees ?? 0;
+
+          if (!shouldConvert) {
+            if (row.currency_code) {
+              originalCurrencies.add(row.currency_code.toUpperCase());
+            }
+            return {
+              country_code: row.country_code,
+              currency_code: row.currency_code ?? null,
+              amount: baseAmount,
+              fees: baseFees,
+              net: baseAmount - baseFees,
+            };
+          }
+
+          if (!row.currency_code || !converter) {
+            return {
+              country_code: row.country_code,
+              currency_code: row.currency_code ?? null,
+              amount: baseAmount,
+              fees: baseFees,
+              net: baseAmount - baseFees,
+            };
+          }
+
+          const convertedAmount = await converter.convert(
+            baseAmount,
+            row.currency_code.toUpperCase(),
+            currency,
+            midDate
+          );
+          const convertedFees = await converter.convert(
+            baseFees,
+            row.currency_code.toUpperCase(),
+            currency,
+            midDate
+          );
+
+          return {
+            country_code: row.country_code,
+            currency_code: row.currency_code ?? null,
+            amount: convertedAmount,
+            fees: convertedFees,
+            net: convertedAmount - convertedFees,
+          };
+        })
+      );
+
+      rows.sort((a, b) => b.amount - a.amount);
+
+      const totals = rows.reduce(
+        (acc, row) => {
+          acc.amount += row.amount;
+          acc.fees += row.fees;
+          acc.net += row.net;
+          return acc;
+        },
+        { amount: 0, fees: 0, net: 0 }
+      );
+
+      let perCurrencyTotals: OrdersResponse["country_totals"] extends {
+        per_currency_totals?: infer T;
+      }
+        ? T
+        :
+            | Array<{
+                currency_code: string | null;
+                amount: number;
+                fees: number;
+                net: number;
+              }>
+            | undefined;
+      if (!shouldConvert && originalCurrencies.size > 1) {
+        const map = new Map<
+          string,
+          { amount: number; fees: number; net: number }
+        >();
+        rows.forEach((row) => {
+          const code = (row.currency_code ?? "UNKNOWN").toUpperCase();
+          const current = map.get(code) ?? { amount: 0, fees: 0, net: 0 };
+          current.amount += row.amount;
+          current.fees += row.fees;
+          current.net += row.net;
+          map.set(code, current);
+        });
+        perCurrencyTotals = Array.from(map.entries()).map(
+          ([currency_code, totals]) => ({
+            currency_code,
+            amount: totals.amount,
+            fees: totals.fees,
+            net: totals.net,
+          })
+        );
+      }
+
+      countryTotals = {
+        rows,
+        totals,
+        per_currency_totals: perCurrencyTotals,
+        normalized: shouldConvert || originalCurrencies.size <= 1,
+      };
+    }
+
     const response: OrdersResponse = {
       range,
       currency,
       kpis: {
         total_orders: totalOrders,
-        total_sales: totalSales,
+        total_sales: effectiveTotalSales,
       },
       series: {
         orders: mapToSeries(ordersOverTime),
-        sales: mapToSeries(salesOverTime),
+        sales: mapToSeries(effectiveSalesOverTime),
       },
       orders: {
         count: ordersPage.count,
@@ -93,6 +283,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         offset,
         data: dataWithConversion,
       },
+      country_totals: countryTotals,
       warnings: warnings.length ? warnings : undefined,
     };
 

@@ -3,6 +3,7 @@ import {
   CurrencyNormalizationService,
   CurrencySelector,
 } from "../api/admin/analytics/orders/types";
+import { frankfurterConverter } from "./frankfurter-converter";
 
 export function resolveConverter(
   scope: MedusaRequest["scope"],
@@ -19,8 +20,11 @@ export function resolveConverter(
     );
   } catch {
     warnings.push(
-      "currencyNormalizationService not configured; returning original currency amounts"
+      "currencyNormalizationService not configured; using Frankfurter public rates instead"
     );
-    return null;
+    warnings.push(
+      "Frankfurter rates are for demo/testing only; add your own currencyNormalizationService for production"
+    );
+    return frankfurterConverter;
   }
 }
