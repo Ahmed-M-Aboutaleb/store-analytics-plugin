@@ -52,6 +52,7 @@ export default class StoreAnalyticsModuleService {
 
   async getTopVariants(from: Date, to: Date, limit?: number) {
     return this.productsAnalyticsService_.getTopVariants(from, to, limit);
+  }
   async getCountryTotals(from: Date, to: Date, allowedStatuses: string[]) {
     return this.ordersAnalyticsService_.getCountryTotals(
       from,
