@@ -1,6 +1,13 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import { DateRange } from "../types";
 import {
+  ALLOWED_CURRENCIES,
   CurrencySelector,
   Preset,
   PRESETS,
@@ -16,8 +23,9 @@ type AnalyticsDateContextValue = {
   setCurrency: React.Dispatch<React.SetStateAction<CurrencySelector>>;
 };
 
-const AnalyticsDateContext =
-  createContext<AnalyticsDateContextValue | null>(null);
+const AnalyticsDateContext = createContext<AnalyticsDateContextValue | null>(
+  null
+);
 
 export const AnalyticsDateProvider = ({
   children,
@@ -35,6 +43,11 @@ export const AnalyticsDateProvider = ({
     const presetParam = params.get("preset") as Preset | null;
     const fromParam = params.get("from");
     const toParam = params.get("to");
+    const currencyParam = params.get("currency") as CurrencySelector | null;
+
+    if (currencyParam && ALLOWED_CURRENCIES.includes(currencyParam)) {
+      setCurrency(currencyParam);
+    }
 
     if (!presetParam || !PRESETS.includes(presetParam)) {
       return;
