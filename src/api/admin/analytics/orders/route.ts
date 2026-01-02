@@ -53,7 +53,8 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
       "archived",
       "requires_action",
     ];
-
+    console.log("Logs(route: /admin/analytics/orders): rangeFrom", rangeFrom);
+    console.log("Logs(route: /admin/analytics/orders): rangeTo", rangeTo);
     const filters = {
       ...buildFilters(range),
       status: allowedStatuses,
