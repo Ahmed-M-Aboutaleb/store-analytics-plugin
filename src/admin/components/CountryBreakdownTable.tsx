@@ -80,12 +80,18 @@ const CountryBreakdownTable = () => {
 
   const formatCountry = (code?: string | null) => {
     if (!code) return "—";
-    const upper = code.toUpperCase();
-    const name = countryNames.of(upper);
-    if (name && name !== upper) {
-      return `${name} (${upper})`;
+    try {
+
+      const upper = code.toUpperCase();
+      const name = countryNames.of(upper);
+      if (name && name !== upper) {
+        return `${name} (${upper})`;
+      }
+      return upper;
     }
-    return upper;
+    catch(err) {
+      console.error(err)
+    }
   };
 
   const formatMoney = (

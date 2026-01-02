@@ -9,9 +9,11 @@ import {
 import { OrdersResponse } from "../../api/admin/analytics/orders/types";
 import { useAnalyticsDate } from "./analytics-date-provider";
 import { sdk } from "../../utils/sdk";
+import { ProductsResponse } from "../types";
 
 type GlobalDataContext = {
   ordersData: OrdersResponse | null;
+  productsData: ProductsResponse | null;
   loading: boolean;
   error: string | null;
   limit: number;
@@ -30,6 +32,9 @@ export const GlobalDataProvider = ({
   children: React.ReactNode;
 }) => {
   const [ordersData, setOrdersData] = useState<OrdersResponse | null>(null);
+  const [productsData, setProductsData] = useState<ProductsResponse | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [limit, setLimit] = useState(10);
@@ -42,6 +47,7 @@ export const GlobalDataProvider = ({
     async (options?: { offset?: number; limit?: number }) => {
       if (preset === "custom" && (!range.from || !range.to)) {
         setOrdersData(null);
+        setProductsData(null);
         setError(null);
         setLoading(false);
         return;
@@ -63,26 +69,37 @@ export const GlobalDataProvider = ({
         const query: Record<string, string> = {
           preset,
           currency,
-          limit: String(nextLimit),
-          offset: String(nextOffset),
-          country_summary: "true",
         };
         if (preset === "custom" && range.from && range.to) {
-          console.log("Logs(data-provider): range", range);
           query.from = range.from;
           query.to = range.to;
         }
 
-        const body = await sdk.client.fetch<OrdersResponse>(
-          "/admin/analytics/orders",
-          {
-            query,
-          }
-        );
+        const ordersQuery = {
+          ...query,
+          limit: String(nextLimit),
+          offset: String(nextOffset),
+          country_summary: "true",
+        };
+
+        const productsQuery = {
+          ...query,
+          limit: "5",
+        };
+
+        const [ordersRes, productsRes] = await Promise.all([
+          sdk.client.fetch<OrdersResponse>("/admin/analytics/orders", {
+            query: ordersQuery,
+          }),
+          sdk.client.fetch<ProductsResponse>("/admin/analytics/products", {
+            query: productsQuery,
+          }),
+        ]);
 
         // Ignore stale responses from older in-flight requests.
         if (requestId === requestIdRef.current) {
-          setOrdersData(body);
+          setOrdersData(ordersRes);
+          setProductsData(productsRes);
         }
       } catch (err) {
         console.error("Failed to fetch orders data:", err);
@@ -105,7 +122,7 @@ export const GlobalDataProvider = ({
   }, [refreshOrdersData]);
   return (
     <GlobalDataContext.Provider
-      value={{ ordersData, refreshOrdersData, loading, error, limit, offset }}
+      value={{ ordersData, productsData, refreshOrdersData, loading, error, limit, offset }}
     >
       {children}
     </GlobalDataContext.Provider>
