@@ -3,10 +3,7 @@ import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
 import Surface from "./Surface";
 import { LineChart } from "./LineChart";
-import {
-  OrdersResponse,
-  Preset,
-} from "../../api/admin/analytics/orders/types";
+import { OrdersResponse, Preset } from "../../api/admin/analytics/orders/types";
 import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
@@ -131,7 +128,9 @@ const OrdersTab = () => {
         <Surface>
           <Heading level="h3">Total Sales</Heading>
           <Text size="large" weight="plus" className="text-ui-fg-base">
-            {currencyFormatter.format(data?.kpis.total_sales ?? 0)}
+            {currency === "original"
+              ? "≈ "
+              : currencyFormatter.format(data?.kpis.total_sales ?? 0)}
           </Text>
         </Surface>
         <Surface>
@@ -169,7 +168,7 @@ const OrdersTab = () => {
             <Heading level="h3" className="mb-2">
               Sales Over Time
             </Heading>
-            {salesSeries.length ? (
+            {currency !== "original" && salesSeries.length ? (
               <div className="w-full" style={{ aspectRatio: "16/9" }}>
                 <BarChart
                   data={salesSeries}
@@ -195,8 +194,7 @@ const OrdersTab = () => {
           Recent Orders
         </Heading>
         <Divider className="my-3" />
-        <OrdersTable
-        />
+        <OrdersTable />
       </Surface>
 
       <Surface>

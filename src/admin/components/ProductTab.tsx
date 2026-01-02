@@ -92,40 +92,42 @@ const ProductsTab = () => {
       ) : null}
 
       {/* Top variants table */}
-      <Surface>
-        <Heading level="h3" className="mb-2">
-          Top Performing Variants
-        </Heading>
-        <Divider className="my-3" />
-        <TopVariantsTable />
-      </Surface>
-
-      {/* New customers chart */}
-      <Surface>
-        <div className="text-center">
+      <div className="flex flex-col md:flex-row gap-4">
+        <Surface className="w-full">
           <Heading level="h3" className="mb-2">
-            New Customers Over Time
+            Top Performing Variants
           </Heading>
-          {newCustomersSeries.length ? (
-            <div className="w-full" style={{ aspectRatio: "16/9" }}>
-              <LineChart
-                data={newCustomersSeries}
-                xAxisDataKey="date"
-                yAxisDataKey="value"
-                lineColor={CUSTOMER_CHART_COLOR}
-                xAxisTickFormatter={shortDate}
-                yAxisTickFormatter={(value) => numberFormatter.format(value)}
-                tooltipLabelFormatter={shortDate}
-                yAxisDomain={["dataMin", "dataMax"]}
-              />
-            </div>
-          ) : (
-            <div className="py-12 flex justify-center items-center">
-              <Text className="text-ui-fg-muted">No data</Text>
-            </div>
-          )}
-        </div>
-      </Surface>
+          <Divider className="my-3" />
+          <TopVariantsTable />
+        </Surface>
+
+        {/* New customers chart */}
+        <Surface className="w-full md:mt-0">
+          <div className="text-center">
+            <Heading level="h3" className="mb-2">
+              New Customers Over Time
+            </Heading>
+            {newCustomersSeries.length ? (
+              <div className="w-full" style={{ aspectRatio: "16/9" }}>
+                <LineChart
+                  data={newCustomersSeries}
+                  xAxisDataKey="date"
+                  yAxisDataKey="value"
+                  lineColor={CUSTOMER_CHART_COLOR}
+                  xAxisTickFormatter={shortDate}
+                  yAxisTickFormatter={(value) => numberFormatter.format(value)}
+                  tooltipLabelFormatter={shortDate}
+                  yAxisDomain={["dataMin", "dataMax"]}
+                />
+              </div>
+            ) : (
+              <div className="py-12 flex justify-center items-center">
+                <Text className="text-ui-fg-muted">No data</Text>
+              </div>
+            )}
+          </div>
+        </Surface>
+      </div>
     </div>
   );
 };

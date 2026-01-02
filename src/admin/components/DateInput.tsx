@@ -1,13 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
-import { Text, DatePicker, Tabs, Button } from "@medusajs/ui";
-import { Preset } from "../../api/admin/analytics/orders/types";
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
+import { Text, DatePicker, Tabs, Button, Select, Badge } from "@medusajs/ui";
 import {
-  resolveRange,
-  startOfUTC,
-  endOfUTC,
-  asDateISOString,
-} from "../../utils/date-range";
+  ALLOWED_CURRENCIES,
+  CurrencySelector,
+  Preset,
+} from "../../api/admin/analytics/orders/types";
+import { useAnalyticsDate } from "../providers/analytics-date-provider";
+import { resolveRange } from "../../utils/date-range";
 
 const PRESETS: Preset[] = [
   "this-month",
@@ -23,8 +22,17 @@ const formatPresetLabel = (preset: Preset): string => {
     .join(" ");
 };
 
-const DateInput = () => {
-  const { preset, range, setPreset, setRange } = useAnalyticsDate();
+const toTitle = (value: string): string =>
+  value
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+
+type View = "orders" | "products";
+
+const DateInput = ({ view }: { view: View }) => {
+  const { preset, range, setPreset, setRange, currency, setCurrency } =
+    useAnalyticsDate();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -39,9 +47,29 @@ const DateInput = () => {
     return new Date(year, month - 1, day);
   };
 
+  const toUtcStartIso = (date: Date) =>
+    new Date(
+      Date.UTC(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+    ).toISOString();
+
+  const toUtcEndIso = (date: Date) =>
+    new Date(
+      Date.UTC(
+        date.getFullYear(),
+        date.getMonth(),
+        date.getDate(),
+        23,
+        59,
+        59,
+        999
+      )
+    ).toISOString();
+
   const shareUrl = useMemo(() => {
     const url = new URL(window.location.href);
     url.searchParams.set("preset", preset);
+    url.searchParams.set("currency", currency);
+    url.searchParams.set("view", view);
 
     if (preset === "custom" && range.from && range.to) {
       url.searchParams.set("from", range.from);
@@ -52,7 +80,7 @@ const DateInput = () => {
     }
 
     return url.toString();
-  }, [preset, range.from, range.to]);
+  }, [preset, range.from, range.to, currency, view]);
 
   const handleCopyShareLink = async () => {
     try {
@@ -65,14 +93,45 @@ const DateInput = () => {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
         <Text size="small" weight="plus" className="text-ui-fg-subtle">
           Date Range
         </Text>
-        <div className="flex items-center gap-2">
-          <Button size="small" variant="secondary" onClick={handleCopyShareLink}>
-            {copied ? "Copied" : "Share link"}
-          </Button>
+        <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-3">
+          <div className="flex items-center gap-2">
+            <Text size="small" className="text-ui-fg-subtle">
+              Currency
+            </Text>
+            <Select
+              value={currency}
+              onValueChange={(value) => setCurrency(value as CurrencySelector)}
+            >
+              <Select.Trigger className="w-[180px]">
+                <Select.Value placeholder="Select currency" />
+              </Select.Trigger>
+              <Select.Content>
+                {ALLOWED_CURRENCIES.map((c) => (
+                  <Select.Item key={c} value={c}>
+                    {toTitle(c)}
+                  </Select.Item>
+                ))}
+              </Select.Content>
+            </Select>
+            <Badge color="green">
+              {currency === "original"
+                ? "Original prices"
+                : `Converted to ${toTitle(currency)}`}
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="small"
+              variant="secondary"
+              onClick={handleCopyShareLink}
+            >
+              {copied ? "Copied" : "Share link"}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -109,7 +168,7 @@ const DateInput = () => {
               value={toLocalCalendarDate(range.from)}
               onChange={(date) => {
                 setRange((prev) => ({
-                  from: date ? asDateISOString(startOfUTC(date)) : undefined,
+                  from: date ? toUtcStartIso(date) : undefined,
                   to: prev?.to,
                 }));
               }}
@@ -126,7 +185,7 @@ const DateInput = () => {
               onChange={(date) => {
                 setRange((prev) => ({
                   from: prev?.from,
-                  to: date ? asDateISOString(endOfUTC(date)) : undefined,
+                  to: date ? toUtcEndIso(date) : undefined,
                 }));
               }}
             />

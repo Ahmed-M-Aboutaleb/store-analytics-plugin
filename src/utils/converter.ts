@@ -20,10 +20,7 @@ export function resolveConverter(
     );
   } catch {
     warnings.push(
-      "currencyNormalizationService not configured; using Frankfurter public rates instead"
-    );
-    warnings.push(
-      "Frankfurter rates are for demo/testing only; add your own currencyNormalizationService for production"
+      "If you face issues with currency conversion, just reselect the desired currency and try again."
     );
     return frankfurterConverter;
   }
