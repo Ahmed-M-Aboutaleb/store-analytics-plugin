@@ -6,7 +6,7 @@ import {
   CurrencySelector,
   PRESETS,
   Preset,
-} from "../orders/types";
+} from "../../../../types";
 import { ProductsResponse } from "./types";
 import { mapToSeries, resolveRange } from "../../../../utils";
 import { resolveConverter } from "../../../../utils/converter";

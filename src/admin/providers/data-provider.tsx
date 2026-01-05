@@ -6,7 +6,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { OrdersResponse } from "../../api/admin/analytics/orders/types";
+import { OrdersResponse } from "../../types";
 import { useAnalyticsDate } from "./analytics-date-provider";
 import { sdk } from "../../utils/sdk";
 import { ProductsResponse } from "../types";
@@ -42,10 +42,10 @@ export const GlobalDataProvider = ({
   const requestIdRef = useRef(0);
   const limitRef = useRef(limit);
   const offsetRef = useRef(offset);
-  const { preset, range, currency } = useAnalyticsDate();
+  const { range, currency } = useAnalyticsDate();
   const refreshOrdersData = useCallback(
     async (options?: { offset?: number; limit?: number }) => {
-      if (preset === "custom" && (!range.from || !range.to)) {
+      if (range.preset === "custom" && (!range.from || !range.to)) {
         setOrdersData(null);
         setProductsData(null);
         setError(null);
@@ -67,12 +67,12 @@ export const GlobalDataProvider = ({
 
       try {
         const query: Record<string, string> = {
-          preset,
+          preset: range.preset,
           currency,
         };
-        if (preset === "custom" && range.from && range.to) {
-          query.from = range.from;
-          query.to = range.to;
+        if (range.preset === "custom" && range.from && range.to) {
+          query.from = range.from.toString();
+          query.to = range.to.toString();
         }
 
         const ordersQuery = {
@@ -114,7 +114,7 @@ export const GlobalDataProvider = ({
         }
       }
     },
-    [currency, preset, range.from, range.to]
+    [currency, range.preset, range.from, range.to]
   );
 
   useEffect(() => {
@@ -122,7 +122,15 @@ export const GlobalDataProvider = ({
   }, [refreshOrdersData]);
   return (
     <GlobalDataContext.Provider
-      value={{ ordersData, productsData, refreshOrdersData, loading, error, limit, offset }}
+      value={{
+        ordersData,
+        productsData,
+        refreshOrdersData,
+        loading,
+        error,
+        limit,
+        offset,
+      }}
     >
       {children}
     </GlobalDataContext.Provider>

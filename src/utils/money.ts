@@ -1,7 +1,4 @@
-import {
-  CurrencyNormalizationService,
-  CurrencySelector,
-} from "../api/admin/analytics/orders/types";
+import { CurrencyNormalizationService, CurrencySelector } from "../types";
 
 export const createCurrencyFormatter = (
   code: string | null | undefined,

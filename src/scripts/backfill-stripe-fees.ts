@@ -7,7 +7,7 @@ import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import Stripe from "stripe";
 import { parseStripeFees } from "../utils";
 import { FilterableOrderProps } from "@medusajs/types";
-import { frankfurterConverter } from "../utils/frankfurter-converter";
+import { fawazAhmedConverter } from "../utils/fawaz-ahmed-converter";
 
 type BackfillOptions = {
   pageSize: number;
@@ -459,7 +459,7 @@ async function convertMajorAmount(
   }
 
   try {
-    const converted = await frankfurterConverter.convert(amount, from, to, at);
+    const converted = await fawazAhmedConverter.convert(amount, from, to, at);
     return converted;
   } catch (err) {
     const error = err as Error;

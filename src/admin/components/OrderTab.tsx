@@ -1,9 +1,9 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
 import Surface from "./Surface";
 import { LineChart } from "./LineChart";
-import { OrdersResponse, Preset } from "../../api/admin/analytics/orders/types";
+import { OrdersResponse, Preset } from "../../types";
 import { BarChart } from "./BarChart";
 import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
@@ -12,7 +12,7 @@ import OrdersTable from "./OrdersTable";
 import CountryBreakdownTable from "./CountryBreakdownTable";
 
 const OrdersTab = () => {
-  const { preset, range, currency } = useAnalyticsDate();
+  const { range, currency } = useAnalyticsDate();
   const { ordersData: data, loading, error } = useGlobalAnalyticsData();
 
   const shortDate = (value: string | number) => {
@@ -32,12 +32,14 @@ const OrdersTab = () => {
       .join(" ");
 
   const presetLabel = useMemo(() => {
-    if (preset === "custom") {
+    if (range.preset === "custom") {
       if (!range.from || !range.to) return "Custom (select range)";
-      return `${shortDate(range.from)} – ${shortDate(range.to)}`;
+      return `${shortDate(range.from.toString())} – ${shortDate(
+        range.to.toString()
+      )}`;
     }
-    return formatPresetLabel(preset);
-  }, [preset, range.from, range.to]);
+    return formatPresetLabel(range.preset);
+  }, [range.preset, range.from, range.to]);
 
   const latestCurrency = useMemo(
     () => data?.orders.data[0]?.currency_code ?? "USD",

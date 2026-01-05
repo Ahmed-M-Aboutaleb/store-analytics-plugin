@@ -3,7 +3,7 @@ import {
   CurrencyNormalizationService,
   CurrencySelector,
   OrdersResponse,
-} from "../api/admin/analytics/orders/types";
+} from "../types";
 
 export async function convertOrderAmounts(
   order: OrdersResponse["orders"]["data"][number],

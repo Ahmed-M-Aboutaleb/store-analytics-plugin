@@ -3,7 +3,7 @@ import {
   FilterableOrderProps,
   IOrderModuleService,
 } from "@medusajs/types";
-import { OrdersResponse } from "../api/admin/analytics/orders/types";
+import { OrdersResponse } from "../types";
 import { parseStripeFeeCurrency, parseStripeFees, toNumber } from ".";
 
 const DESC_CREATED_AT: FindConfigOrder = { created_at: "DESC" };
@@ -29,10 +29,7 @@ export async function fetchOrdersPage(
       "billing_address.id",
       "billing_address.country_code",
     ],
-    relations: [
-      "shipping_address",
-      "billing_address",
-    ],
+    relations: ["shipping_address", "billing_address"],
     order: DESC_CREATED_AT,
     take: limit,
     skip: offset,

@@ -1,3 +1,5 @@
-const formatDateInput = (date: Date) => date.toISOString().slice(0, 10);
+import { asDateISOString } from "./date-range";
+
+const formatDateInput = (date: Date) => asDateISOString(date).slice(0, 10);
 
 export default formatDateInput;

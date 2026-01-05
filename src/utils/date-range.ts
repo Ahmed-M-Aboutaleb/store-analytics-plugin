@@ -1,92 +1,79 @@
 import { FilterableOrderProps } from "@medusajs/types";
-import { Preset, ResolvedRange } from "../api/admin/analytics/orders/types";
+import { Preset, ResolvedRange } from "../types";
 
 export const asDateISOString = (value: Date) => value.toISOString();
 
-export const startOfUTC = (date: Date) =>
-  new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      0,
-      0,
-      0,
-      0
-    )
-  );
+export const getStartOfDayUTC = (date: Date) => {
+  const d = new Date(date);
+  d.setUTCHours(0, 0, 0, 0);
+  return d;
+};
+export const getEndOfDayUTC = (date: Date) => {
+  const d = new Date(date);
+  d.setUTCHours(23, 59, 59, 999);
+  return d;
+};
 
-export const endOfUTC = (date: Date) =>
-  new Date(
-    Date.UTC(
-      date.getUTCFullYear(),
-      date.getUTCMonth(),
-      date.getUTCDate(),
-      23,
-      59,
-      59,
-      999
-    )
-  );
+export const getMonthRange = (baseDate: Date, offset: number) => {
+  const year = baseDate.getUTCFullYear();
+  const targetMonth = baseDate.getUTCMonth() + offset;
 
-export const getMonthRange = (today: Date, offset: number) => {
-  const start = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + offset, 1)
-  );
-  const end = new Date(
-    Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + offset + 1, 0)
-  );
+  const start = new Date(Date.UTC(year, targetMonth, 1));
+  const end = new Date(Date.UTC(year, targetMonth + 1, 0));
+
   return {
-    from: startOfUTC(start),
-    to: endOfUTC(end),
+    from: getStartOfDayUTC(start),
+    to: getEndOfDayUTC(end),
   };
 };
 
 export const resolveRange = (
   preset: Preset,
   from?: string,
-  to?: string,
-  additionalOffset = false
+  to?: string
 ): ResolvedRange => {
   const today = new Date();
+
   switch (preset) {
     case "this-month": {
       const { from: f, to: t } = getMonthRange(today, 0);
       return { preset, from: asDateISOString(f), to: asDateISOString(t) };
     }
+
     case "last-month": {
       const { from: f, to: t } = getMonthRange(today, -1);
       return { preset, from: asDateISOString(f), to: asDateISOString(t) };
     }
+
     case "last-3-months": {
+      // Start: 1st day of month, 2 months ago
       const start = new Date(
         Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 2, 1)
       );
-      const end = endOfUTC(
-        new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0))
+      // End: Last day of current month
+      const end = new Date(
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0)
       );
+
       return {
         preset,
-        from: asDateISOString(startOfUTC(start)),
-        to: additionalOffset
-          ? asDateISOString(end)
-          : asDateISOString(endOfUTC(end)),
+        from: asDateISOString(getStartOfDayUTC(start)),
+        to: asDateISOString(getEndOfDayUTC(end)),
       };
     }
+
     case "custom": {
       if (!from || !to) {
-        throw new Error("Custom preset requires both 'from' and 'to'");
+        throw new Error("Custom preset requires both 'from' and 'to' dates");
       }
-      console.log("Logs(date-range: resolveRange): from, to", {
-        from,
-        to,
-      });
+
       return {
         preset,
-        from: asDateISOString(startOfUTC(new Date(from))),
-        to: asDateISOString(endOfUTC(new Date(to))),
+        from: asDateISOString(getStartOfDayUTC(new Date(from))),
+        to: asDateISOString(getEndOfDayUTC(new Date(to))),
       };
     }
+
     default: {
       throw new Error(`Unsupported preset: ${preset}`);
     }

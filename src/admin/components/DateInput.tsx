@@ -1,10 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Text, DatePicker, Tabs, Button, Select, Badge } from "@medusajs/ui";
-import {
-  ALLOWED_CURRENCIES,
-  CurrencySelector,
-  Preset,
-} from "../../api/admin/analytics/orders/types";
+import { ALLOWED_CURRENCIES, CurrencySelector, Preset } from "../../types";
 import { useAnalyticsDate } from "../providers/analytics-date-provider";
 import { resolveRange } from "../../utils/date-range";
 
@@ -31,8 +27,7 @@ const toTitle = (value: string): string =>
 type View = "orders" | "products";
 
 const DateInput = ({ view }: { view: View }) => {
-  const { preset, range, setPreset, setRange, currency, setCurrency } =
-    useAnalyticsDate();
+  const { range, setRange, currency, setCurrency } = useAnalyticsDate();
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -67,20 +62,20 @@ const DateInput = ({ view }: { view: View }) => {
 
   const shareUrl = useMemo(() => {
     const url = new URL(window.location.href);
-    url.searchParams.set("preset", preset);
+    url.searchParams.set("preset", range.preset);
     url.searchParams.set("currency", currency);
     url.searchParams.set("view", view);
 
-    if (preset === "custom" && range.from && range.to) {
-      url.searchParams.set("from", range.from);
-      url.searchParams.set("to", range.to);
+    if (range.preset === "custom" && range.from && range.to) {
+      url.searchParams.set("from", range.from.toString());
+      url.searchParams.set("to", range.to.toString());
     } else {
       url.searchParams.delete("from");
       url.searchParams.delete("to");
     }
 
     return url.toString();
-  }, [preset, range.from, range.to, currency, view]);
+  }, [range.preset, range.from, range.to, currency, view]);
 
   const handleCopyShareLink = async () => {
     try {
@@ -136,15 +131,22 @@ const DateInput = ({ view }: { view: View }) => {
       </div>
 
       <Tabs
-        value={preset}
+        value={range.preset}
         onValueChange={(p) => {
           const nextPreset = p as Preset;
-          setPreset(nextPreset);
+          setRange((prev) => ({
+            ...prev,
+            preset: nextPreset,
+          }));
 
           if (nextPreset !== "custom") {
             setRange(resolveRange(nextPreset));
           } else {
-            setRange({ from: undefined, to: undefined });
+            setRange({
+              from: undefined as unknown as string,
+              to: undefined as unknown as string,
+              preset: "custom",
+            });
           }
         }}
       >
@@ -157,7 +159,7 @@ const DateInput = ({ view }: { view: View }) => {
         </Tabs.List>
       </Tabs>
 
-      {preset === "custom" && (
+      {range.preset === "custom" && (
         <div className="flex flex-col md:flex-row md:items-end items-start gap-4 mt-2">
           <div className="flex flex-col gap-1">
             <Text size="small" className="text-ui-fg-subtle">
@@ -165,11 +167,12 @@ const DateInput = ({ view }: { view: View }) => {
             </Text>
             <DatePicker
               className="w-[160px]"
-              value={toLocalCalendarDate(range.from)}
+              value={toLocalCalendarDate(range.from.toString())}
               onChange={(date) => {
                 setRange((prev) => ({
-                  from: date ? toUtcStartIso(date) : undefined,
+                  from: toUtcStartIso(date as Date),
                   to: prev?.to,
+                  preset: "custom",
                 }));
               }}
             />
@@ -181,11 +184,12 @@ const DateInput = ({ view }: { view: View }) => {
             </Text>
             <DatePicker
               className="w-[160px]"
-              value={toLocalCalendarDate(range.to)}
+              value={toLocalCalendarDate(range.to.toString())}
               onChange={(date) => {
                 setRange((prev) => ({
                   from: prev?.from,
-                  to: date ? toUtcEndIso(date) : undefined,
+                  to: toUtcEndIso(date as Date),
+                  preset: "custom",
                 }));
               }}
             />

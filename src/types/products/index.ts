@@ -1,10 +1,8 @@
-import {
-  ResolvedRange,
-  SeriesPoint,
-  CurrencySelector,
-} from "../../../../types";
+import { SeriesPoint } from "../charts";
+import { CurrencySelector } from "../currencies";
+import { ResolvedRange } from "../presets";
 
-export type ProductsResponse = {
+type ProductsResponse = {
   range: ResolvedRange;
   currency: CurrencySelector;
   series: {
@@ -18,3 +16,5 @@ export type ProductsResponse = {
   }[];
   warnings?: string[];
 };
+
+export { ProductsResponse };

@@ -1,9 +1,6 @@
 import { MedusaRequest } from "@medusajs/framework/http";
-import {
-  CurrencyNormalizationService,
-  CurrencySelector,
-} from "../api/admin/analytics/orders/types";
-import { frankfurterConverter } from "./frankfurter-converter";
+import { CurrencyNormalizationService, CurrencySelector } from "../types";
+import { fawazAhmedConverter } from "./fawaz-ahmed-converter";
 
 export function resolveConverter(
   scope: MedusaRequest["scope"],
@@ -22,6 +19,6 @@ export function resolveConverter(
     warnings.push(
       "If you face issues with currency conversion, just reselect the desired currency and try again."
     );
-    return frankfurterConverter;
+    return fawazAhmedConverter;
   }
 }

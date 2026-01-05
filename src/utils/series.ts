@@ -1,4 +1,4 @@
-import { SeriesPoint } from "../api/admin/analytics/orders/types";
+import { SeriesPoint } from "../types";
 
 export const mapToSeries = (collection: Map<string, number>): SeriesPoint[] =>
   Array.from(collection.entries())

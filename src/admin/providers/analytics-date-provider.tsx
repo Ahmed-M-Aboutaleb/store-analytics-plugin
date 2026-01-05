@@ -5,21 +5,19 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { DateRange } from "../types";
 import {
   ALLOWED_CURRENCIES,
   CurrencySelector,
   Preset,
   PRESETS,
-} from "../../api/admin/analytics/orders/types";
+  ResolvedRange,
+} from "../../types";
 import { resolveRange } from "../../utils/date-range";
 
 type AnalyticsDateContextValue = {
-  preset: Preset;
-  range: DateRange;
+  range: ResolvedRange;
   currency: CurrencySelector;
-  setPreset: React.Dispatch<React.SetStateAction<Preset>>;
-  setRange: React.Dispatch<React.SetStateAction<DateRange>>;
+  setRange: React.Dispatch<React.SetStateAction<ResolvedRange>>;
   setCurrency: React.Dispatch<React.SetStateAction<CurrencySelector>>;
 };
 
@@ -32,8 +30,7 @@ export const AnalyticsDateProvider = ({
 }: {
   children: ReactNode;
 }) => {
-  const [preset, setPreset] = useState<Preset>("this-month");
-  const [range, setRange] = useState<DateRange>(() =>
+  const [range, setRange] = useState<ResolvedRange>(() =>
     resolveRange("this-month")
   );
   const [currency, setCurrency] = useState<CurrencySelector>("original");
@@ -54,7 +51,6 @@ export const AnalyticsDateProvider = ({
     }
 
     if (presetParam !== "custom") {
-      setPreset(presetParam);
       setRange(resolveRange(presetParam));
       return;
     }
@@ -65,8 +61,7 @@ export const AnalyticsDateProvider = ({
 
     try {
       const resolved = resolveRange("custom", fromParam, toParam);
-      setPreset("custom");
-      setRange({ from: resolved.from, to: resolved.to });
+      setRange(resolved);
     } catch (err) {
       // Ignore invalid query params and keep defaults
       console.error("Invalid analytics date params", err);
@@ -75,7 +70,7 @@ export const AnalyticsDateProvider = ({
 
   return (
     <AnalyticsDateContext.Provider
-      value={{ preset, setPreset, range, setRange, currency, setCurrency }}
+      value={{ range, setRange, currency, setCurrency }}
     >
       {children}
     </AnalyticsDateContext.Provider>
@@ -93,8 +88,7 @@ export const useAnalyticsDateContext = () => {
 };
 
 export const useAnalyticsDate = () => {
-  const { preset, range, setPreset, setRange, currency, setCurrency } =
-    useAnalyticsDateContext();
+  const { range, setRange, currency, setCurrency } = useAnalyticsDateContext();
 
-  return { preset, range, setPreset, setRange, currency, setCurrency };
+  return { range, setRange, currency, setCurrency };
 };
