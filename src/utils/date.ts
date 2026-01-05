@@ -1,13 +1,11 @@
-import { FilterableOrderProps } from "@medusajs/types";
 import { Preset, ResolvedRange } from "../types";
-
-export const asDateISOString = (value: Date) => value.toISOString();
 
 export const getStartOfDayUTC = (date: Date) => {
   const d = new Date(date);
   d.setUTCHours(0, 0, 0, 0);
   return d;
 };
+
 export const getEndOfDayUTC = (date: Date) => {
   const d = new Date(date);
   d.setUTCHours(23, 59, 59, 999);
@@ -37,12 +35,12 @@ export const resolveRange = (
   switch (preset) {
     case "this-month": {
       const { from: f, to: t } = getMonthRange(today, 0);
-      return { preset, from: asDateISOString(f), to: asDateISOString(t) };
+      return { preset, from: f.toISOString(), to: t.toISOString() };
     }
 
     case "last-month": {
       const { from: f, to: t } = getMonthRange(today, -1);
-      return { preset, from: asDateISOString(f), to: asDateISOString(t) };
+      return { preset, from: f.toISOString(), to: t.toISOString() };
     }
 
     case "last-3-months": {
@@ -57,8 +55,8 @@ export const resolveRange = (
 
       return {
         preset,
-        from: asDateISOString(getStartOfDayUTC(start)),
-        to: asDateISOString(getEndOfDayUTC(end)),
+        from: getStartOfDayUTC(start).toISOString(),
+        to: getEndOfDayUTC(end).toISOString(),
       };
     }
 
@@ -69,8 +67,8 @@ export const resolveRange = (
 
       return {
         preset,
-        from: asDateISOString(getStartOfDayUTC(new Date(from))),
-        to: asDateISOString(getEndOfDayUTC(new Date(to))),
+        from: getStartOfDayUTC(new Date(from)).toISOString(),
+        to: getEndOfDayUTC(new Date(to)).toISOString(),
       };
     }
 
@@ -79,10 +77,3 @@ export const resolveRange = (
     }
   }
 };
-
-export const buildFilters = (range: ResolvedRange): FilterableOrderProps => ({
-  created_at: {
-    $gte: range.from,
-    $lte: range.to,
-  } as FilterableOrderProps["created_at"],
-});

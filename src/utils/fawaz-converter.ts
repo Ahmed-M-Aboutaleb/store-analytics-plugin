@@ -1,5 +1,4 @@
 import { CurrencyNormalizationService } from "../types";
-import formatDateInput from "./formate-date-input";
 
 class FawazAhmedConverter implements CurrencyNormalizationService {
   private readonly baseUrl =
@@ -61,8 +60,8 @@ class FawazAhmedConverter implements CurrencyNormalizationService {
     const toCode = to.toLowerCase();
 
     // Clamp date: never ask for future rates
-    const todayIso = formatDateInput(new Date());
-    const requestedDate = formatDateInput(at);
+    const todayIso = new Date().toLocaleDateString("en-CA");
+    const requestedDate = at.toLocaleDateString("en-CA");
     const effectiveDate = requestedDate > todayIso ? todayIso : requestedDate;
 
     // Unique key for this currency pair + date
