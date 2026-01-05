@@ -6,8 +6,8 @@ import {
 } from "@medusajs/framework/workflows-sdk";
 
 import { CurrencySelector, OrdersResponse } from "../../types";
-import { resolveConverter } from "../../utils/converter";
-import { convertOrderAmounts } from "../../utils/conversions";
+import { resolveConverter } from "../../utils.old/converter";
+import { convertOrderAmounts } from "../../utils.old/conversions";
 
 export type ConvertOrdersInput = {
   orders: OrdersResponse["orders"]["data"];

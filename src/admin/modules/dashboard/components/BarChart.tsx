@@ -9,8 +9,8 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import { useDarkMode } from "../hooks/use-dark-mode";
-import generateColorsForData from "../../utils/generate-colors-for-data";
+import { useDarkMode } from "../../../hooks/use-dark-mode";
+import generateColorsForData from "../../../../utils.old/generate-colors-for-data";
 
 type BarChartProps<T extends Record<string, unknown>> = {
   data: T[] | undefined;

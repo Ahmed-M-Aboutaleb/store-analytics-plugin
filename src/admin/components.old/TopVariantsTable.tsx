@@ -1,8 +1,8 @@
 import { Table, Text } from "@medusajs/ui";
 import { useMemo } from "react";
-import { useGlobalAnalyticsData } from "../providers/data-provider";
-import { createCurrencyFormatter } from "../../utils"; // Adjust path
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
+import { useGlobalAnalyticsData } from "../providers/data-provider.old";
+import { createCurrencyFormatter } from "../../utils.old"; // Adjust path
+import { useAnalyticsDate } from "../providers/analytics-date-provider.old";
 
 const TopVariantsTable = () => {
   const { productsData } = useGlobalAnalyticsData();

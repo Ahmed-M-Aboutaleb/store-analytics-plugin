@@ -2,12 +2,12 @@ import { defineRouteConfig } from "@medusajs/admin-sdk";
 import { ChartBar } from "@medusajs/icons";
 import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
 import { useEffect, useMemo, useState } from "react";
-import OrdersTab from "../../components/OrderTab";
-import ProductsTab from "../../components/ProductTab";
-import Surface from "../../components/Surface";
-import DateInput from "../../components/DateInput";
-import { AnalyticsDateProvider } from "../../providers/analytics-date-provider";
-import { GlobalDataProvider } from "../../providers/data-provider";
+import OrdersTab from "../../components.old/OrderTab";
+import ProductsTab from "../../components.old/ProductTab";
+import Surface from "../../modules/dashboard/components/Surface";
+import DateInput from "../../modules/dashboard/components/DateInput.old";
+import { AnalyticsDateProvider } from "../../providers/analytics-date-provider.old";
+import { GlobalDataProvider } from "../../providers/data-provider.old";
 
 const AnalyticsContent = () => {
   const initialView = useMemo(() => {

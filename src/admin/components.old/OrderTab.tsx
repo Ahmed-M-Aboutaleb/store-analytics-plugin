@@ -1,13 +1,16 @@
 import { useCallback, useMemo } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
-import Surface from "./Surface";
-import { LineChart } from "./LineChart";
+import Surface from "../modules/dashboard/components/Surface";
+import { LineChart } from "../modules/dashboard/components/LineChart";
 import { OrdersResponse, Preset } from "../../types";
-import { BarChart } from "./BarChart";
-import { createCurrencyFormatter, createIntegerFormatter } from "../../utils";
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
-import { useGlobalAnalyticsData } from "../providers/data-provider";
+import { BarChart } from "../modules/dashboard/components/BarChart";
+import {
+  createCurrencyFormatter,
+  createIntegerFormatter,
+} from "../../utils.old";
+import { useAnalyticsDate } from "../providers/analytics-date-provider.old";
+import { useGlobalAnalyticsData } from "../providers/data-provider.old";
 import OrdersTable from "./OrdersTable";
 import CountryBreakdownTable from "./CountryBreakdownTable";
 

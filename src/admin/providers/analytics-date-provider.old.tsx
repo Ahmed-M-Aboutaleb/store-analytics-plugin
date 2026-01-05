@@ -12,7 +12,7 @@ import {
   PRESETS,
   ResolvedRange,
 } from "../../types";
-import { resolveRange } from "../../utils/date-range";
+import { resolveRange } from "../../utils.old/date-range";
 
 type AnalyticsDateContextValue = {
   range: ResolvedRange;

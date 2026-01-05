@@ -5,9 +5,9 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
 
-import StoreAnalyticsModuleService from "../../modules/store-analytics/service";
-import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics";
-import { mapToSeries } from "../../utils";
+import StoreAnalyticsModuleService from "../../modules/store-analytics.old/service";
+import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics.old";
+import { mapToSeries } from "../../utils.old";
 
 export type PrecomputeOrdersKpisInput = {
   from: Date | string;

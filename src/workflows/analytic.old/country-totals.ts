@@ -6,10 +6,10 @@ import {
 } from "@medusajs/framework/workflows-sdk";
 import { OrderStatus } from "@medusajs/framework/utils";
 
-import StoreAnalyticsModuleService from "../../modules/store-analytics/service";
-import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics";
+import StoreAnalyticsModuleService from "../../modules/store-analytics.old/service";
+import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics.old";
 import { CurrencySelector, OrdersResponse } from "../../types";
-import { resolveConverter } from "../../utils/converter";
+import { resolveConverter } from "../../utils.old/converter";
 
 export type CountryTotalsInput = {
   from: Date | string;

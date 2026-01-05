@@ -1,12 +1,12 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { OrderStatus } from "@medusajs/framework/utils";
 import { OrdersResponse } from "../../../../types";
-import { buildFilters, mapToSeries, resolveRange } from "../../../../utils";
-import { resolveConverter } from "../../../../utils/converter";
-import ordersKpisWorkflow from "../../../../workflows/analytics/orders-kpis";
-import ordersPageWorkflow from "../../../../workflows/analytics/orders-page";
-import convertOrdersWorkflow from "../../../../workflows/analytics/convert-orders";
-import countryTotalsWorkflow from "../../../../workflows/analytics/country-totals";
+import { buildFilters, mapToSeries, resolveRange } from "../../../../utils.old";
+import { resolveConverter } from "../../../../utils.old/converter";
+import ordersKpisWorkflow from "../../../../workflows/analytic.old/orders-kpis";
+import ordersPageWorkflow from "../../../../workflows/analytic.old/orders-page";
+import convertOrdersWorkflow from "../../../../workflows/analytic.old/convert-orders";
+import countryTotalsWorkflow from "../../../../workflows/analytic.old/country-totals";
 import { AnalyticsOrdersQuery } from "../../../validation-schemas";
 
 const ALLOWED_STATUSES: OrderStatus[] = [

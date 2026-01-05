@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
-import StoreAnalyticsModuleService from "../../../../modules/store-analytics/service";
-import { STORE_ANALYTICS_MODULE } from "../../../../modules/store-analytics";
+import StoreAnalyticsModuleService from "../../../../modules/store-analytics.old/service";
+import { STORE_ANALYTICS_MODULE } from "../../../../modules/store-analytics.old";
 import {
   ALLOWED_CURRENCIES,
   CurrencySelector,
@@ -8,8 +8,8 @@ import {
   Preset,
 } from "../../../../types";
 import { ProductsResponse } from "./types";
-import { mapToSeries, resolveRange } from "../../../../utils";
-import { resolveConverter } from "../../../../utils/converter";
+import { mapToSeries, resolveRange } from "../../../../utils.old";
+import { resolveConverter } from "../../../../utils.old/converter";
 
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
   try {

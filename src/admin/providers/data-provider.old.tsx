@@ -7,9 +7,9 @@ import {
   useState,
 } from "react";
 import { OrdersResponse } from "../../types";
-import { useAnalyticsDate } from "./analytics-date-provider";
-import { sdk } from "../../utils/sdk";
-import { ProductsResponse } from "../types";
+import { useAnalyticsDate } from "./analytics-date-provider.old";
+import { sdk } from "../../utils.old/sdk";
+import { ProductsResponse } from "../types.old";
 
 type GlobalDataContext = {
   ordersData: OrdersResponse | null;

@@ -1,9 +1,9 @@
 import { useMemo } from "react";
 import { Badge, Button, Divider, Text } from "@medusajs/ui";
 import { ChevronLeft, ChevronRight } from "@medusajs/icons";
-import { OrdersResponse } from "../../api/admin/analytics/orders/types";
-import { formatCurrency } from "../../utils/money";
-import { useGlobalAnalyticsData } from "../providers/data-provider";
+import { OrdersResponse } from "../../api/admin/analytics.old/orders/types";
+import { formatCurrency } from "../../utils.old/money";
+import { useGlobalAnalyticsData } from "../providers/data-provider.old";
 
 type MoneyKey = "subtotal" | "tax_total" | "total" | "stripe_fees";
 

@@ -10,7 +10,7 @@ import {
   BarChart as RechartsBarChart,
   Bar,
 } from "recharts";
-import { useDarkMode } from "../hooks/use-dark-mode";
+import { useDarkMode } from "../../../hooks/use-dark-mode";
 
 type LineChartProps = {
   data: any[] | undefined;

@@ -1,15 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Text, DatePicker, Tabs, Button, Select, Badge } from "@medusajs/ui";
-import { ALLOWED_CURRENCIES, CurrencySelector, Preset } from "../../types";
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
-import { resolveRange } from "../../utils/date-range";
-
-const PRESETS: Preset[] = [
-  "this-month",
-  "last-month",
-  "last-3-months",
-  "custom",
-];
+import {
+  ALLOWED_CURRENCIES,
+  CurrencySelector,
+  Preset,
+  PRESETS,
+} from "../../../../types";
+import { useAnalyticsDate } from "../../../providers/analytics-date-provider.old";
+import { resolveRange } from "../../../../utils.old/date-range";
 
 const formatPresetLabel = (preset: Preset): string => {
   return preset

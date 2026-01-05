@@ -1,8 +1,8 @@
 import { useMemo } from "react";
 import { Badge, Text } from "@medusajs/ui";
-import { formatCurrency } from "../../utils/money";
-import { useGlobalAnalyticsData } from "../providers/data-provider";
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
+import { formatCurrency } from "../../utils.old/money";
+import { useGlobalAnalyticsData } from "../providers/data-provider.old";
+import { useAnalyticsDate } from "../providers/analytics-date-provider.old";
 
 const CountryBreakdownTable = () => {
   const { ordersData, loading } = useGlobalAnalyticsData();
@@ -81,16 +81,14 @@ const CountryBreakdownTable = () => {
   const formatCountry = (code?: string | null) => {
     if (!code) return "—";
     try {
-
       const upper = code.toUpperCase();
       const name = countryNames.of(upper);
       if (name && name !== upper) {
         return `${name} (${upper})`;
       }
       return upper;
-    }
-    catch(err) {
-      console.error(err)
+    } catch (err) {
+      console.error(err);
     }
   };
 

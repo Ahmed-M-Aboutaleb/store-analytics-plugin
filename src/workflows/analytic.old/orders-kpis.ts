@@ -5,8 +5,8 @@ import {
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
 
-import StoreAnalyticsModuleService from "../../modules/store-analytics/service";
-import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics";
+import StoreAnalyticsModuleService from "../../modules/store-analytics.old/service";
+import { STORE_ANALYTICS_MODULE } from "../../modules/store-analytics.old";
 
 export type OrdersKpisInput = {
   from: Date | string;

@@ -5,9 +5,9 @@ import {
 } from "@medusajs/framework/types";
 import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import Stripe from "stripe";
-import { parseStripeFees } from "../utils";
+import { parseStripeFees } from "../utils.old";
 import { FilterableOrderProps } from "@medusajs/types";
-import { fawazAhmedConverter } from "../utils/fawaz-ahmed-converter";
+import { fawazAhmedConverter } from "../utils.old/fawaz-ahmed-converter";
 
 type BackfillOptions = {
   pageSize: number;

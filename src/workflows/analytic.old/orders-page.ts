@@ -7,7 +7,7 @@ import {
 import { FilterableOrderProps, IOrderModuleService } from "@medusajs/types";
 import { Modules } from "@medusajs/utils";
 
-import { fetchOrdersPage } from "../../utils/fetch-orders";
+import { fetchOrdersPage } from "../../utils.old/fetch-orders";
 
 export type OrdersPageInput = {
   filters: FilterableOrderProps;

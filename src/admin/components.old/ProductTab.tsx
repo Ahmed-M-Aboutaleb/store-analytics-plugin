@@ -1,13 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { Badge, Divider, Heading, Text } from "@medusajs/ui";
 import { InformationCircle } from "@medusajs/icons";
-import Surface from "./Surface";
-import { LineChart } from "./LineChart";
-import { useAnalyticsDate } from "../providers/analytics-date-provider";
-import { useGlobalAnalyticsData } from "../providers/data-provider";
-import { ProductsResponse } from "../types";
+import Surface from "../modules/dashboard/components/Surface";
+import { LineChart } from "../modules/dashboard/components/LineChart";
+import { useAnalyticsDate } from "../providers/analytics-date-provider.old";
+import { useGlobalAnalyticsData } from "../providers/data-provider.old";
+import { ProductsResponse } from "../types.old";
 import TopVariantsTable from "./TopVariantsTable";
-import { createIntegerFormatter } from "../../utils";
+import { createIntegerFormatter } from "../../utils.old";
 
 const ProductsTab = () => {
   const { preset, range } = useAnalyticsDate();
