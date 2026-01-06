@@ -1,16 +1,11 @@
-const PRESETS = [
-  "custom",
-  "this-month",
-  "last-month",
-  "last-3-months",
-] as const;
+const PRESETS = ["custom", "this-month", "last-month", "last-3-months"];
 
 type Preset = (typeof PRESETS)[number];
 
-type ResolvedRange = {
+type ResolvedRange<T = string> = {
   preset: Preset;
-  from: Date | string;
-  to: Date | string;
+  from: T;
+  to: T;
 };
 
 export { PRESETS, Preset, ResolvedRange };

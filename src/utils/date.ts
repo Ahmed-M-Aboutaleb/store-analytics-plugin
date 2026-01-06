@@ -29,18 +29,18 @@ export const resolveRange = (
   preset: Preset,
   from?: string,
   to?: string
-): ResolvedRange => {
+): ResolvedRange<Date> => {
   const today = new Date();
 
   switch (preset) {
     case "this-month": {
       const { from: f, to: t } = getMonthRange(today, 0);
-      return { preset, from: f.toISOString(), to: t.toISOString() };
+      return { preset, from: f, to: t };
     }
 
     case "last-month": {
       const { from: f, to: t } = getMonthRange(today, -1);
-      return { preset, from: f.toISOString(), to: t.toISOString() };
+      return { preset, from: f, to: t };
     }
 
     case "last-3-months": {
@@ -55,8 +55,8 @@ export const resolveRange = (
 
       return {
         preset,
-        from: getStartOfDayUTC(start).toISOString(),
-        to: getEndOfDayUTC(end).toISOString(),
+        from: getStartOfDayUTC(start),
+        to: getEndOfDayUTC(end),
       };
     }
 
@@ -67,8 +67,8 @@ export const resolveRange = (
 
       return {
         preset,
-        from: getStartOfDayUTC(new Date(from)).toISOString(),
-        to: getEndOfDayUTC(new Date(to)).toISOString(),
+        from: getStartOfDayUTC(new Date(from)),
+        to: getEndOfDayUTC(new Date(to)),
       };
     }
 
