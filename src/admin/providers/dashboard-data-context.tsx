@@ -7,7 +7,6 @@ import {
   useState,
 } from "react";
 import { useDashboardFilters } from "./dashboard-filter-context";
-import { logger } from "@medusajs/framework";
 import { OrdersResponse } from "../../types";
 
 type ProductsTabData = {
@@ -36,7 +35,6 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
   const [data, setData] = useState<Partial<DashboardData> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-
   const fetchData = useCallback(
     async (path: string, limit: number = 200, offset: number = 0) => {
       setIsLoading(true);
@@ -49,11 +47,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
           date_to: filters.dateRange.to.toISOString(),
           currency: filters.currency,
         };
-        logger.info(
-          `Fetching dashboard data from ${path} with params: ${JSON.stringify(
-            params
-          )}`
-        );
+        console.info("Fetching dashboard data with params:", params);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const mockOrdersData: OrdersResponse = {
           totalOrders: 150,
@@ -76,7 +70,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         setData(mockData);
       } catch (err) {
         const myErr = err instanceof Error ? err : new Error("Unknown error");
-        logger.error("Error fetching dashboard data:", myErr);
+        console.error("Error fetching dashboard data:", myErr);
         setError(myErr);
       } finally {
         setIsLoading(false);

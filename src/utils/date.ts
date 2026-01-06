@@ -1,5 +1,19 @@
 import { Preset, ResolvedRange } from "../types";
 
+export const enforceUTCDate = (localDate: Date) => {
+  return new Date(
+    Date.UTC(
+      localDate.getFullYear(),
+      localDate.getMonth(),
+      localDate.getDate(),
+      0,
+      0,
+      0,
+      0
+    )
+  );
+};
+
 export const getStartOfDayUTC = (date: Date) => {
   const d = new Date(date);
   d.setUTCHours(0, 0, 0, 0);

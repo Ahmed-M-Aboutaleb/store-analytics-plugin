@@ -1,4 +1,9 @@
-const PRESETS = ["custom", "this-month", "last-month", "last-3-months"];
+const PRESETS = [
+  "this-month",
+  "last-month",
+  "last-3-months",
+  "custom",
+] as const;
 
 type Preset = (typeof PRESETS)[number];
 

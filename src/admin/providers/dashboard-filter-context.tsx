@@ -35,6 +35,13 @@ const DashboardFilterProvider = ({ children }: { children: ReactNode }) => {
   );
 
   const setFilters = useCallback((filters: Partial<DashboardFilters>) => {
+    if (filters.dateRange) {
+      filters.dateRange = resolveRange(
+        filters.dateRange.preset,
+        filters.dateRange.from?.toISOString(),
+        filters.dateRange.to?.toISOString()
+      );
+    }
     setFiltersState((prevFilters) => ({
       ...prevFilters,
       ...filters,
