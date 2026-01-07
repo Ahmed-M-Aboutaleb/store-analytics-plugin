@@ -1,3 +1,4 @@
+import { clx } from "@medusajs/ui";
 import type { ReactNode } from "react";
 
 const Surface = ({
@@ -8,7 +9,10 @@ const Surface = ({
   className?: string;
 }) => (
   <div
-    className={`rounded-lg border border-ui-border-base bg-ui-bg-component p-4 shadow-xs ${className}`}
+    className={clx(
+      `rounded-lg border border-ui-border-base bg-ui-bg-component p-4 shadow-xs`,
+      className
+    )}
   >
     {children}
   </div>
