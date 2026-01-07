@@ -7,15 +7,11 @@ import {
   useState,
 } from "react";
 import { useDashboardFilters } from "./dashboard-filter-context";
-import { OrdersResponse } from "../../types";
+import { OrdersResponse, ProductsResponse } from "../../types";
 
-type ProductsTabData = {
-  totalProducts: number;
-  totalInventory: number;
-};
 type DashboardData = {
   orders: OrdersResponse;
-  products: ProductsTabData;
+  products: ProductsResponse;
 };
 
 type DashboardDataContextType = {
@@ -52,9 +48,21 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         const mockOrdersData: OrdersResponse = {
           kpis: { totalOrders: 150, totalSales: 45000 },
         };
-        const mockProductsData: ProductsTabData = {
-          totalProducts: 75,
-          totalInventory: 300,
+        const mockProductsData: ProductsResponse = {
+          top_variants: [
+            {
+              variant_id: "1",
+              variant_title: "kpda",
+              revenue: 0.5,
+              quantity: 2,
+            },
+            {
+              variant_id: "2",
+              variant_title: "kpda_spicy",
+              revenue: 2.5,
+              quantity: 5,
+            },
+          ],
         };
         let mockData: Partial<DashboardData> = {};
         if (path.includes("orders")) {
