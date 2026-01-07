@@ -50,8 +50,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         console.info("Fetching dashboard data with params:", params);
         await new Promise((resolve) => setTimeout(resolve, 1000));
         const mockOrdersData: OrdersResponse = {
-          totalOrders: 150,
-          totalRevenue: 12500,
+          kpis: { totalOrders: 150, totalSales: 45000 },
         };
         const mockProductsData: ProductsTabData = {
           totalProducts: 75,

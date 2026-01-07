@@ -1,6 +1,5 @@
 type OrdersResponse = {
-  totalOrders: number;
-  totalRevenue: number;
+  kpis: { totalOrders: number; totalSales: number };
 };
 
 export type { OrdersResponse };

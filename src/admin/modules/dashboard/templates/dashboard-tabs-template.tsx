@@ -2,8 +2,8 @@ import { useState } from "react";
 import { TabViews, VIEWS } from "../../../../types";
 import { Container, Divider, Heading, Tabs, Text } from "@medusajs/ui";
 import { ChartBar } from "@medusajs/icons";
-import Surface from "../components/Surface";
-import FiltersComponent from "../components/FiltersComponent";
+import Surface from "../components/surface";
+import FiltersComponent from "../components/filters-component";
 
 const DashboardTabsTemplate = () => {
   const [view, setView] = useState<TabViews>(Object.keys(VIEWS)[0] as TabViews);

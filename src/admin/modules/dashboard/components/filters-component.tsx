@@ -1,8 +1,8 @@
 import { Button, Text } from "@medusajs/ui";
 import { useDashboardFilters } from "../../../providers/dashboard-filter-context";
-import DateSelector from "./DateSelector";
-import PresetSelector from "./PresetSelector";
-import CurrencySelectorComponent from "./CurrencySelectorComponent";
+import DateSelector from "./date-selector";
+import PresetSelector from "./preset-selector";
+import CurrencySelectorComponent from "./currency-selector-component";
 
 const FiltersComponent = () => {
   const { filters } = useDashboardFilters();
