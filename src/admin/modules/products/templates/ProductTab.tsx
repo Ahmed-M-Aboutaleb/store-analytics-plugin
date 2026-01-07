@@ -2,7 +2,10 @@ import { Table, Text } from "@medusajs/ui";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
 
 const ProductTab = () => {
-  const { data } = useDashboardData();
+  const { refetch, data } = useDashboardData();
+  useEffect(() => {
+    refetch("/admin/dashboard/products");
+  }, [refetch]);
   console.log(data?.products);
   return (
     <div>
