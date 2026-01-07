@@ -22,7 +22,7 @@ type DashboardDataContextType = {
   isLoading: boolean;
   error: Error | null;
   data: Partial<DashboardData> | null;
-  refetch: () => Promise<void>;
+  refetch: (path: string) => Promise<void>;
 };
 
 const DashboardDataContext = createContext<
@@ -36,7 +36,11 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const fetchData = useCallback(
-    async (path: string, limit: number = 200, offset: number = 0) => {
+    async (
+      path: string = "/admin/dashboard/orders",
+      limit: number = 200,
+      offset: number = 0
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
@@ -48,9 +52,19 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
           currency: filters.currency,
         };
         console.info("Fetching dashboard data with params:", params);
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 600));
         const mockOrdersData: OrdersResponse = {
           kpis: { totalOrders: 150, totalSales: 45000 },
+          series: {
+            orders: [
+              { date: "2024-01-01", value: 114 },
+              { date: "2024-01-02", value: 36 },
+            ],
+            sales: [
+              { date: "2024-01-01", value: 40500 },
+              { date: "2024-01-02", value: 4500 },
+            ],
+          },
         };
         const mockProductsData: ProductsTabData = {
           totalProducts: 75,
@@ -79,7 +93,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
   );
 
   useEffect(() => {
-    fetchData("/admin/dashboard/orders");
+    fetchData();
   }, [fetchData]);
 
   const value = useMemo(
@@ -87,7 +101,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
       data,
       isLoading,
       error,
-      refetch: () => fetchData("/admin/dashboard/orders"),
+      refetch: (path: string) => fetchData(path),
     }),
     [data, isLoading, error, fetchData]
   );
