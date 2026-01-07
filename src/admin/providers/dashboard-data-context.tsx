@@ -80,7 +80,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
             products: mockProductsData,
           };
         }
-        setData(mockData);
+        setData((prevData) => ({ ...prevData, ...mockData }));
       } catch (err) {
         const myErr = err instanceof Error ? err : new Error("Unknown error");
         console.error("Error fetching dashboard data:", myErr);
@@ -91,17 +91,12 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
     },
     [filters.currency, filters.dateRange]
   );
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
-
   const value = useMemo(
     () => ({
       data,
       isLoading,
       error,
-      refetch: (path: string) => fetchData(path),
+      refetch: fetchData,
     }),
     [data, isLoading, error, fetchData]
   );
