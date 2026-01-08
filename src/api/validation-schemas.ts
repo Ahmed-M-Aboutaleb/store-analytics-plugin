@@ -21,22 +21,26 @@ export const CurrencySelectorSchema = z.object({
     ),
 });
 
+export const CountrySummarySchema = z.object({
+  country_summary: z
+    .preprocess((val) => {
+      if (typeof val === "string") {
+        return val.toLowerCase() === "true";
+      }
+      return Boolean(val);
+    }, z.boolean())
+    .optional()
+    .default(false)
+    .describe("Include aggregated totals per country when true."),
+});
+
 export const AnalyticsOrdersQuerySchema = createFindParams()
   .merge(PresetSchema)
   .merge(CurrencySelectorSchema)
+  .merge(CountrySummarySchema)
   .extend({
     from: z.string().optional(),
     to: z.string().optional(),
-    country_summary: z
-      .preprocess((val) => {
-        if (typeof val === "string") {
-          return val.toLowerCase() === "true";
-        }
-        return Boolean(val);
-      }, z.boolean())
-      .optional()
-      .default(false)
-      .describe("Include aggregated totals per country when true."),
   })
   .superRefine((value, ctx) => {
     if (value.preset === "custom") {

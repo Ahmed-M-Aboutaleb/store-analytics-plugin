@@ -183,7 +183,10 @@ const COUNTRYKPIS_MOCK = [
 ];
 
 const mockOrdersData: OrdersResponse = {
-  kpis: { totalOrders: 150, totalSales: 45000 },
+  kpis: [
+    { currency_code: "usd", total_orders: 150, total_sales: 60000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+  ],
   series: {
     orders: [
       { date: "2024-01-01", value: 114 },

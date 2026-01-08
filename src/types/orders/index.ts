@@ -9,8 +9,14 @@ type CountryKPI = {
   net: number;
 };
 
+type OrderKPI = {
+  currency_code: string;
+  total_orders: number;
+  total_sales: number;
+};
+
 type OrdersResponse = {
-  kpis: { totalOrders: number; totalSales: number };
+  kpis: OrderKPI[];
   series: {
     orders: SeriesPoint[];
     sales: SeriesPoint[];
@@ -19,4 +25,4 @@ type OrdersResponse = {
   country_kpis: CountryKPI[];
 };
 
-export type { OrdersResponse };
+export type { OrdersResponse, OrderKPI, CountryKPI };

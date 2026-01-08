@@ -8,7 +8,7 @@ const OrdersTable = () => {
   const { data, isLoading, refetch } = useDashboardData();
 
   const orders = data?.orders?.orders || [];
-  const totalOrders = data?.orders?.kpis.totalOrders ?? 0;
+  const totalOrders = 0;
 
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 200;

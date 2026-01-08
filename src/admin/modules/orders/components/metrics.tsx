@@ -15,16 +15,12 @@ const Metrics = () => {
           ))
         : data?.orders?.kpis && (
             <>
-              <MetricCard
-                value={data.orders.kpis.totalOrders}
-                label="Total Orders"
-              />
+              <MetricCard value={0} label="Total Orders" />
               <MetricCard
                 value={
                   filters.currency === "original"
                     ? "≈"
-                    : data.orders.kpis.totalSales +
-                      ` ${filters.currency.toUpperCase()}`
+                    : 0 + ` ${filters.currency.toUpperCase()}`
                 }
                 label="Total Sales"
                 icon={<BuildingTax />}
