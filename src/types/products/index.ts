@@ -1,6 +1,7 @@
 
 type ProductsResponse = {
   top_variants: TopVariant[];
+  total_variants: number;
 };
 
 type TopVariant = {

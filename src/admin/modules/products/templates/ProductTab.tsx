@@ -1,8 +1,9 @@
-import { Table, Text } from "@medusajs/ui";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
 import { useEffect } from "react";
-import { BarChart } from "../../dashboard/components/bar-chart";
 import VariantsTable from "../components/variants-table";
+import Surface from "../../dashboard/components/surface";
+import { Divider, Heading } from "@medusajs/ui";
+import ProductMetrics from "../components/product-metrics";
 
 const ProductTab = () => {
   const { refetch } = useDashboardData();
@@ -12,10 +13,18 @@ const ProductTab = () => {
   }, [refetch]);
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <div>
+    <div className="flex gap-4 flex-col">
+      <ProductMetrics />
+
+      <Surface>
+        <div className="flex items-center justify-between mb-2">
+          <Heading level="h3">Top Variants</Heading>
+        </div>
+
+        <Divider className="my-3" />
+
         <VariantsTable />
-      </div>
+      </Surface>
     </div>
   );
 };

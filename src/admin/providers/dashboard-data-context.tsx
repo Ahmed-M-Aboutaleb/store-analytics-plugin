@@ -8,6 +8,7 @@ import {
 import { useDashboardFilters } from "./dashboard-filter-context";
 import { OrdersResponse, ProductsResponse } from "../../types";
 import { OrderDTO, OrderLineItemDTO } from "@medusajs/framework/types";
+import { mock } from "node:test";
 
 const ORDERS: OrderDTO[] = [
   {
@@ -198,6 +199,22 @@ const mockOrdersData: OrdersResponse = {
   country_kpis: COUNTRYKPIS_MOCK,
 };
 
+const ALL_MOCK_VARIANTS = [
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
+  { product_title: "Sandwich", variant_title: "kpda_spicy", quantity: 5 },
+];
+
 type DashboardData = {
   orders: OrdersResponse;
   products: ProductsResponse;
@@ -238,27 +255,16 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         };
         console.info("Fetching dashboard data with params:", params);
         await new Promise((resolve) => setTimeout(resolve, 600));
-
-        const mockProductsData: ProductsResponse = {
-          top_variants: [
-            {
-              product_title: "Sandwich",
-              variant_title: "kpda",
-              quantity: 2,
-            },
-            {
-              product_title: "Sandwich",
-              variant_title: "kpda_spicy",
-              quantity: 5,
-            },
-          ],
-        };
         let mockData: Partial<DashboardData> = {};
         if (path.includes("orders")) {
           mockData = {
             orders: mockOrdersData,
           };
         } else {
+          const mockProductsData: ProductsResponse = {
+            top_variants: ALL_MOCK_VARIANTS.slice(offset, offset + limit),
+            total_variants: ALL_MOCK_VARIANTS.length,
+          };
           mockData = {
             products: mockProductsData,
           };
