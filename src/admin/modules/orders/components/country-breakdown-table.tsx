@@ -63,13 +63,6 @@ const CountryBreakdownTable = () => {
 
   return (
     <div className="space-y-4">
-      {/* Warning Banner */}
-      {!isNormalized && (
-        <Badge color="orange" className="w-fit">
-          ⚠ Displaying original currencies. Totals cannot be summed.
-        </Badge>
-      )}
-
       {/* Main Table */}
       <div className="border rounded-lg overflow-hidden">
         <Table>
