@@ -4,10 +4,9 @@ type ProductsResponse = {
 };
 
 type TopVariant = {
-  variant_id: string;
+  product_title: string;
   variant_title: string;
   quantity: number;
-  revenue: number;
 };
 
 export { ProductsResponse };

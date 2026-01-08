@@ -2,7 +2,6 @@ import {
   createContext,
   useCallback,
   useContext,
-  useEffect,
   useMemo,
   useState,
 } from "react";
@@ -65,15 +64,13 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         const mockProductsData: ProductsResponse = {
           top_variants: [
             {
-              variant_id: "1",
+              product_title: "Sandwich",
               variant_title: "kpda",
-              revenue: 0.5,
               quantity: 2,
             },
             {
-              variant_id: "2",
+              product_title: "Sandwich",
               variant_title: "kpda_spicy",
-              revenue: 2.5,
               quantity: 5,
             },
           ],
