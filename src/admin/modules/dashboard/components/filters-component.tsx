@@ -3,6 +3,7 @@ import { useDashboardFilters } from "../../../providers/dashboard-filter-context
 import DateSelector from "./date-selector";
 import PresetSelector from "./preset-selector";
 import CurrencySelectorComponent from "./currency-selector-component";
+import WarningBanner from "./warning-banner";
 
 const FiltersComponent = () => {
   const { filters } = useDashboardFilters();
@@ -26,6 +27,12 @@ const FiltersComponent = () => {
         <div className="flex flex-col md:flex-row md:items-end items-start gap-4 mt-2">
           <DateSelector />
         </div>
+      )}
+      {filters.currency === "original" && (
+        <WarningBanner
+          className="mt-2"
+          warning="Displaying original currencies. Totals cannot be summed."
+        />
       )}
     </div>
   );

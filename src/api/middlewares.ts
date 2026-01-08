@@ -7,7 +7,7 @@ import { AnalyticsOrdersQuerySchema } from "./validation-schemas";
 export default defineMiddlewares({
   routes: [
     {
-      matcher: "/admin/analytics/orders",
+      matcher: "/admin/analysis/orders",
       method: "GET",
       middlewares: [
         validateAndTransformQuery(AnalyticsOrdersQuerySchema, {
