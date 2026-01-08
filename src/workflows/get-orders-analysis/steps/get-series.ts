@@ -3,7 +3,7 @@ import { ANALYSIS_MODULE } from "../../../modules/analysis";
 import AnalysisModuleService from "../../../modules/analysis/service";
 import { CurrencySelector, OrderKPI } from "../../../types";
 
-type GetOrdersKPIsWorkflowInput = {
+type GetOrdersSeriesWorkflowInput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
@@ -41,32 +41,29 @@ async function normalizeKPIsCurrency(
   return normalizedKPIs;
 }
 
-const getOrdersKPIsStep = createStep(
-  "get-orders-kpis",
+const getOrdersSeriesStep = createStep(
+  "get-orders-series",
   async (
-    { fromDate, toDate, currencyCode }: GetOrdersKPIsWorkflowInput,
+    { fromDate, toDate, currencyCode }: GetOrdersSeriesWorkflowInput,
     { container }
   ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
 
-    const kpis = await analysisModuleService.getOrderKPIs(fromDate, toDate);
-    if (currencyCode !== "original") {
-      const normalizedKPIs = await normalizeKPIsCurrency(
-        kpis,
-        currencyCode,
-        analysisModuleService,
-        container
-      );
-      return new StepResponse(normalizedKPIs, normalizedKPIs);
-    }
-    return new StepResponse(kpis, kpis);
+    const series = await analysisModuleService.getOrdersSeries(
+      fromDate,
+      toDate
+    );
+    return new StepResponse(series, series);
   },
-  async (kpis) => {
-    if (!kpis) {
+  async (series) => {
+    if (!series) {
       return new StepResponse(null, null);
     }
   }
 );
 
-export { getOrdersKPIsStep, GetOrdersKPIsWorkflowInput };
+export {
+  getOrdersSeriesStep as getOrdersSeriesStep,
+  GetOrdersSeriesWorkflowInput,
+};

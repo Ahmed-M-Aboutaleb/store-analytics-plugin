@@ -1,13 +1,22 @@
 import { Heading, Skeleton, Text } from "@medusajs/ui";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
-import { BarChart } from "../../dashboard/components/bar-chart";
 import { LineChart } from "../../dashboard/components/line-chart";
 import { useDashboardFilters } from "../../../providers/dashboard-filter-context";
+import { StackedBarChart } from "../../dashboard/components/stacked-bar-chart";
+import { useMemo } from "react";
+import { transformSalesForChart } from "../../../../utils/charts";
 
 const OrderCharts = () => {
   const { filters } = useDashboardFilters();
   const { isLoading, data } = useDashboardData();
-
+  const rawSalesData = useMemo(
+    () => data?.orders?.series?.sales || {},
+    [data?.orders?.series?.sales]
+  );
+  const chartData = useMemo(() => {
+    return transformSalesForChart(rawSalesData);
+  }, [rawSalesData]);
+  const currencyKeys = useMemo(() => Object.keys(rawSalesData), [rawSalesData]);
   return (
     <div className="grid gap-6 md:grid-cols-2">
       {isLoading
@@ -43,23 +52,16 @@ const OrderCharts = () => {
               </div>
               <div className="text-center">
                 <Heading level="h3" className="mb-2">
-                  Sales Over Time (
-                  {filters.currency !== "original"
-                    ? filters.currency.toUpperCase()
-                    : "Select a currency to view sales"}
-                  )
+                  Sales Over Time
                 </Heading>
-                {filters.currency !== "original" &&
-                data?.orders?.series.sales.length ? (
+                {currencyKeys.length ? (
                   <div className="w-full" style={{ aspectRatio: "16/9" }}>
-                    <BarChart
-                      data={data.orders.series.sales}
+                    <StackedBarChart
+                      data={chartData}
                       xAxisDataKey="date"
-                      yAxisDataKey="value"
-                      lineColor="#16a34a"
-                      yAxisTickFormatter={(value) => `${value}`}
-                      useStableColors
-                      colorKeyField="date"
+                      dataKeys={currencyKeys}
+                      yAxisTickFormatter={(val) => `${val}`}
+                      useStableColors={true}
                     />
                   </div>
                 ) : (

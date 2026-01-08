@@ -1,12 +1,12 @@
 import type { MedusaRequest, MedusaResponse } from "@medusajs/framework/http";
 import { getOrdersAnalysisWorkflow } from "../../../../workflows/get-orders-analysis";
 import { resolveRange } from "../../../../utils/date";
-import { Preset } from "../../../../types";
+import { CurrencySelector, Preset } from "../../../../types";
 type AnalyticsOrdersQuery = {
   preset?: Preset;
   from?: string;
   to?: string;
-  currency_code?: string;
+  currency?: CurrencySelector;
   country_summary?: boolean;
   limit?: number;
   offset?: number;
@@ -16,7 +16,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     preset,
     from,
     to,
-    currency_code,
+    currency,
     country_summary,
     limit,
     offset,
@@ -26,21 +26,20 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     from,
     to
   );
-  console.log("Settings: ", {
-    from,
-    to,
+  console.log("AnalyticsOrdersQuery: ", {
     preset,
-    currency_code,
+    from: resolvedFrom,
+    to: resolvedTo,
+    currency,
     country_summary,
     limit,
     offset,
-    resolvedFrom,
-    resolvedTo,
   });
   const { result } = await getOrdersAnalysisWorkflow(req.scope).run({
     input: {
       fromDate: resolvedFrom.toISOString(),
       toDate: resolvedTo.toISOString(),
+      currencyCode: currency || "original",
     },
   });
   res.status(200).json({ ...result });

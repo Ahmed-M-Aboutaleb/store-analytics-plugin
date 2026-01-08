@@ -51,7 +51,8 @@ class FawazAhmedConverter implements CurrencyNormalizationService {
     amount: number,
     from: string,
     to: string,
-    at: Date
+    at: Date,
+    isRetry: boolean = false
   ): Promise<number> {
     if (!Number.isFinite(amount)) return amount;
     if (from === to) return amount;
@@ -97,6 +98,10 @@ class FawazAhmedConverter implements CurrencyNormalizationService {
       return amount * rate;
     } catch (err) {
       console.error("Currency conversion failed", err);
+      if (!isRetry) {
+        // Retry once
+        return this.convert(amount, from, to, at, true);
+      }
       return amount; // Fallback: return original amount so UI doesn't crash
     }
   }

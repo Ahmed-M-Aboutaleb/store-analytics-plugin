@@ -11,7 +11,6 @@ const CountryBreakdownTable = () => {
   const countryKpis = data?.orders?.country_kpis || [];
   const isNormalized = filters.currency !== "original";
 
-  // 1. Memoized Country Formatter
   const countryNames = useMemo(
     () => new Intl.DisplayNames(["en"], { type: "region" }),
     []
@@ -26,16 +25,13 @@ const CountryBreakdownTable = () => {
     }
   };
 
-  // 2. Efficient Totals Calculation
   const { totalAmount, totalNet, perCurrencyTotals } = useMemo(() => {
-    // If normalized, we just sum up everything
     if (isNormalized) {
       const amount = countryKpis.reduce((acc, k) => acc + k.amount, 0);
       const net = countryKpis.reduce((acc, k) => acc + k.net, 0);
       return { totalAmount: amount, totalNet: net, perCurrencyTotals: [] };
     }
 
-    // If not normalized, group by currency
     const map = new Map<
       string,
       { currency: string; amount: number; net: number }
@@ -64,7 +60,7 @@ const CountryBreakdownTable = () => {
   return (
     <div className="space-y-4">
       {/* Main Table */}
-      <div className="border rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <Table.Header>
             <Table.Row>

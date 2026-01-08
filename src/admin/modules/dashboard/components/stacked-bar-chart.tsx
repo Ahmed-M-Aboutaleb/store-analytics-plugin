@@ -7,40 +7,39 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Cell,
 } from "recharts";
 import { useDarkMode } from "../../../hooks/use-dark-mode";
 import { generateColorsForData } from "../../../../utils/charts";
 
-type BarChartProps<T extends Record<string, unknown>> = {
+type StackedBarChartProps<T extends Record<string, unknown>> = {
   data: T[] | undefined;
   xAxisDataKey: keyof T;
-  yAxisDataKey: keyof T;
   lineColor?: string;
   yAxisTickFormatter?: (value: number) => string;
   useStableColors?: boolean;
   colorKeyField?: keyof T;
-  xDomain?: [string | number, string | number];
+  dataKeys: (keyof T)[];
 };
 
-export const BarChart = <T extends Record<string, unknown>>({
+export const StackedBarChart = <T extends Record<string, unknown>>({
   data,
   xAxisDataKey,
-  yAxisDataKey,
-  lineColor = "#3B82F6",
   yAxisTickFormatter,
   useStableColors = false,
   colorKeyField,
-  xDomain,
-}: BarChartProps<T>) => {
+  dataKeys,
+}: StackedBarChartProps<T>) => {
   const isDark = useDarkMode();
 
   const colors = React.useMemo(() => {
-    if (!useStableColors || !data || !colorKeyField) {
+    if (!useStableColors || !dataKeys) {
       return [];
     }
-    return generateColorsForData(data, colorKeyField, 70, isDark ? 60 : 50);
-  }, [data, useStableColors, colorKeyField, isDark]);
+
+    const keysAsData = dataKeys.map((k) => ({ keyName: String(k) }));
+
+    return generateColorsForData(keysAsData, "keyName", 70, isDark ? 60 : 50);
+  }, [dataKeys, useStableColors, isDark]);
 
   return (
     <ResponsiveContainer aspect={16 / 9}>
@@ -55,7 +54,6 @@ export const BarChart = <T extends Record<string, unknown>>({
           axisLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickLine={{ stroke: isDark ? "#4B5563" : "#D1D5DB" }}
           tickMargin={10}
-          domain={xDomain}
         />
         <YAxis
           tickFormatter={yAxisTickFormatter}
@@ -68,12 +66,8 @@ export const BarChart = <T extends Record<string, unknown>>({
           cursor={{
             fill: isDark ? "rgba(55, 65, 81, 0.2)" : "rgba(243, 244, 246, 0.5)",
           }}
-          formatter={(value?: number) =>
-            typeof value === "number"
-              ? yAxisTickFormatter
-                ? yAxisTickFormatter(value)
-                : value
-              : value ?? ""
+          formatter={(value: number | undefined) =>
+            yAxisTickFormatter ? yAxisTickFormatter(value!) : value
           }
           contentStyle={{
             backgroundColor: isDark ? "#1F2937" : "#FFFFFF",
@@ -90,13 +84,16 @@ export const BarChart = <T extends Record<string, unknown>>({
             marginBottom: "4px",
           }}
         />
-        <Bar dataKey={String(yAxisDataKey)} fill={lineColor}>
-          {useStableColors && colors.length > 0
-            ? data?.map((_, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index]} />
-              ))
-            : null}
-        </Bar>
+        {dataKeys?.map((key, index) => (
+          <Bar
+            key={String(key)}
+            dataKey={String(key)}
+            stackId="a"
+            fill={
+              useStableColors && colors.length > 0 ? colors[index] : "#3B82F6"
+            }
+          />
+        ))}
       </RechartsBarChart>
     </ResponsiveContainer>
   );

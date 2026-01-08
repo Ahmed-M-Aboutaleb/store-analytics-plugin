@@ -3,210 +3,12 @@ import {
   useCallback,
   useContext,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { useDashboardFilters } from "./dashboard-filter-context";
 import { OrdersResponse } from "../../types";
-import { OrderDTO, OrderLineItemDTO } from "@medusajs/framework/types";
-
-const ORDERS: OrderDTO[] = [
-  {
-    id: "order_01JSNXDH9BPJWWKVW03B9E9KW8",
-    metadata: {
-      payment_gateway_fee: 200,
-      payment_gateway_currency: "aed",
-    },
-    display_id: 1001,
-    version: 1,
-    status: "pending",
-    email: "customer@example.com",
-    currency_code: "usd",
-    region_id: "reg_01JSNXD6VQC1YH56E4TGC81NWX",
-    customer_id: "cus_01JSNXD6VQC1YH56E4TGC81NWX",
-    sales_channel_id: "sc_01JSNXD6VQC1YH56E4TGC81NWX",
-    total: 5500,
-    subtotal: 5000,
-    tax_total: 500,
-    discount_total: 0,
-    discount_subtotal: 0,
-    discount_tax_total: 0,
-    shipping_total: 0,
-    shipping_subtotal: 0,
-    shipping_tax_total: 0,
-    original_item_total: 5000,
-    original_item_subtotal: 5000,
-    original_item_tax_total: 500,
-    item_total: 5000,
-    item_subtotal: 5000,
-    item_tax_total: 500,
-    original_total: 5500,
-    original_tax_total: 500,
-    created_at: "2024-03-15T10:00:00.000Z",
-    updated_at: "2024-03-15T10:00:00.000Z",
-    items: [] as OrderLineItemDTO[],
-    shipping_address: {
-      id: "addr_01JSNXDH9C47KZ43WQ3TBFXZA1",
-      first_name: "John",
-      last_name: "Doe",
-      address_1: "123 Main St",
-      city: "New York",
-      country_code: "us",
-      postal_code: "10001",
-      phone: "+15550123456",
-      created_at: "2024-03-15T10:00:00.000Z",
-      updated_at: "2024-03-15T10:00:00.000Z",
-    },
-    billing_address: {
-      id: "addr_01JSNXDH9C47KZ43WQ3TBFXZA2",
-      first_name: "John",
-      last_name: "Doe",
-      address_1: "123 Main St",
-      city: "New York",
-      country_code: "us",
-      postal_code: "10001",
-      phone: "+15550123456",
-      created_at: "2024-03-15T10:00:00.000Z",
-      updated_at: "2024-03-15T10:00:00.000Z",
-    },
-    shipping_methods: [],
-    transactions: [],
-    item_discount_total: "",
-    original_subtotal: "",
-    credit_line_total: "",
-    gift_card_total: "",
-    gift_card_tax_total: "",
-    shipping_discount_total: "",
-    original_shipping_total: "",
-    original_shipping_subtotal: "",
-    original_shipping_tax_total: "",
-    raw_original_item_total: {
-      value: "",
-    },
-    raw_original_item_subtotal: {
-      value: "",
-    },
-    raw_original_item_tax_total: {
-      value: "",
-    },
-    raw_item_total: {
-      value: "",
-    },
-    raw_item_subtotal: {
-      value: "",
-    },
-    raw_item_tax_total: {
-      value: "",
-    },
-    raw_original_total: {
-      value: "",
-    },
-    raw_original_subtotal: {
-      value: "",
-    },
-    raw_original_tax_total: {
-      value: "",
-    },
-    raw_total: {
-      value: "",
-    },
-    raw_subtotal: {
-      value: "",
-    },
-    raw_tax_total: {
-      value: "",
-    },
-    raw_discount_total: {
-      value: "",
-    },
-    raw_discount_tax_total: {
-      value: "",
-    },
-    raw_credit_line_total: {
-      value: "",
-    },
-    raw_gift_card_total: {
-      value: "",
-    },
-    raw_gift_card_tax_total: {
-      value: "",
-    },
-    raw_shipping_total: {
-      value: "",
-    },
-    raw_shipping_subtotal: {
-      value: "",
-    },
-    raw_shipping_tax_total: {
-      value: "",
-    },
-    raw_original_shipping_total: {
-      value: "",
-    },
-    raw_original_shipping_subtotal: {
-      value: "",
-    },
-    raw_original_shipping_tax_total: {
-      value: "",
-    },
-  },
-];
-
-const COUNTRYKPIS_MOCK = [
-  {
-    country_code: "US",
-    currency: "usd",
-    amount: 30000,
-    fees: 1200,
-    net: 28800,
-  },
-  {
-    country_code: "IT",
-    currency: "eur",
-    amount: 15000,
-    fees: 600,
-    net: 14400,
-  },
-  {
-    country_code: "AE",
-    currency: "aed",
-    amount: 10000,
-    fees: 400,
-    net: 9600,
-  },
-  {
-    country_code: "FR",
-    currency: "eur",
-    amount: 5000,
-    fees: 200,
-    net: 4800,
-  },
-];
-
-const mockOrdersData: OrdersResponse = {
-  kpis: [
-    { currency_code: "usd", total_orders: 150, total_sales: 60000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
-  ],
-  series: {
-    orders: [
-      { date: "2024-01-01", value: 114 },
-      { date: "2024-01-02", value: 36 },
-    ],
-    sales: [
-      { date: "2024-01-01", value: 40500 },
-      { date: "2024-01-02", value: 4500 },
-    ],
-  },
-  orders: ORDERS,
-  country_kpis: COUNTRYKPIS_MOCK,
-};
+import { sdk } from "../../utils/sdk";
 type ProductsTabData = {
   totalProducts: number;
   totalInventory: number;
@@ -233,45 +35,54 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
   const [data, setData] = useState<Partial<DashboardData> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const lastRequestId = useRef(0);
   const fetchData = useCallback(
-    async (
-      path: string = "/admin/dashboard/orders",
-      limit: number = 200,
-      offset: number = 0
-    ) => {
+    async (path: string, limit: number = 200, offset: number = 0) => {
+      const requestId = Date.now();
+      lastRequestId.current = requestId;
       setIsLoading(true);
       setError(null);
       try {
         const params = {
           limit,
           offset,
-          date_from: filters.dateRange.from.toISOString(),
-          date_to: filters.dateRange.to.toISOString(),
+          from: filters.dateRange.from.toISOString(),
+          to: filters.dateRange.to.toISOString(),
+          preset: filters.dateRange.preset,
           currency: filters.currency,
         };
-        console.info("Fetching dashboard data with params:", params);
         await new Promise((resolve) => setTimeout(resolve, 600));
 
         const mockProductsData: ProductsTabData = {
           totalProducts: 75,
           totalInventory: 3001,
         };
-        let mockData: Partial<DashboardData> = {};
+        let newData: Partial<DashboardData> = {};
         if (path.includes("orders")) {
-          mockData = {
-            orders: mockOrdersData,
-          };
+          const response = await sdk.client.fetch<OrdersResponse>(path, {
+            query: params,
+          });
+          newData = { orders: response };
         } else {
-          mockData = {
+          newData = {
             products: mockProductsData,
           };
         }
-        setData((prevData) => ({ ...prevData, ...mockData }));
+        console.log("Fetched dashboard data:", newData);
+        if (lastRequestId.current === requestId) {
+          setData((prevData) => ({ ...prevData, ...newData }));
+        }
       } catch (err) {
+        if (lastRequestId.current !== requestId) {
+          return;
+        }
         const myErr = err instanceof Error ? err : new Error("Unknown error");
         console.error("Error fetching dashboard data:", myErr);
         setError(myErr);
       } finally {
+        if (lastRequestId.current !== requestId) {
+          return;
+        }
         setIsLoading(false);
       }
     },
