@@ -8,7 +8,11 @@ const OrdersTable = () => {
   const { data, isLoading, refetch } = useDashboardData();
 
   const orders = data?.orders?.orders || [];
-  const totalOrders = 0;
+  const KPIs = data?.orders?.kpis || [];
+  const ORDERS_COUNT = useMemo(() => {
+    return KPIs?.map((kpi) => kpi.total_orders).reduce((a, b) => a + b, 0) || 0;
+  }, [KPIs]);
+  const totalOrders = ORDERS_COUNT;
 
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 200;
@@ -91,10 +95,10 @@ const OrdersTable = () => {
             </Table.Body>
           </Table>
           <Table.Pagination
-            count={orders.length}
+            count={totalOrders}
             pageSize={pageSize}
             pageIndex={pageIndex}
-            pageCount={orders.length}
+            pageCount={pageCount}
             canPreviousPage={canPreviousPage}
             canNextPage={canNextPage}
             previousPage={() => handlePageChange(pageIndex - 1)}

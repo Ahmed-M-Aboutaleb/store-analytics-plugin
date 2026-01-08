@@ -186,6 +186,13 @@ const mockOrdersData: OrdersResponse = {
   kpis: [
     { currency_code: "usd", total_orders: 150, total_sales: 60000 },
     { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
+    { currency_code: "eur", total_orders: 80, total_sales: 20000 },
   ],
   series: {
     orders: [
