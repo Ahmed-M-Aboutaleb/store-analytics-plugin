@@ -5,6 +5,7 @@ import { useDashboardData } from "../../../providers/dashboard-data-context";
 import { Divider, Heading } from "@medusajs/ui";
 import OrdersTable from "../components/orders-table";
 import Surface from "../../dashboard/components/surface";
+import CountryBreakdownTable from "../components/country-breakdown-table";
 
 const OrdersTab = () => {
   const { refetch } = useDashboardData();
@@ -22,6 +23,7 @@ const OrdersTab = () => {
         <Divider className="my-3" />
         <OrdersTable />
       </Surface>
+      <CountryBreakdownTable />
     </div>
   );
 };
