@@ -21,7 +21,7 @@ const CurrencySelectorComponent = () => {
         <Select.Content>
           {ALLOWED_CURRENCIES.map((c) => (
             <Select.Item key={c} value={c}>
-              {c === "original" ? "Original" : c.toUpperCase()}
+              {c === "original" ? "N/A" : c.toUpperCase()}
             </Select.Item>
           ))}
         </Select.Content>
