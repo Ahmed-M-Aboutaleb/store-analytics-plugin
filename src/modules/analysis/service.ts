@@ -40,6 +40,13 @@ class AnalysisModuleService {
     return await this.ordersAnalysisService.getOrdersSeries(fromDate, toDate);
   }
 
+  async getOrdersCountrySummary(fromDate: string, toDate: string) {
+    return await this.ordersAnalysisService.getOrdersCountrySummary(
+      fromDate,
+      toDate
+    );
+  }
+
   resolveCurrencyConverter(
     scope: MedusaRequest["scope"],
     currency: CurrencySelector

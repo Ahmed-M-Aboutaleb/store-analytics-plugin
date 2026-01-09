@@ -8,43 +8,13 @@ import {
 } from "./steps/get-kpis";
 import { CurrencySelector } from "../../types";
 import { getOrdersSeriesStep } from "./steps/get-series";
+import { getOrdersCountriesSummaryStep } from "./steps/get-countries-summary";
 
 type GetOrdersAnalysisWorkflowOutput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
 };
-
-const COUNTRYKPIS_MOCK = [
-  {
-    country_code: "US",
-    currency: "usd",
-    amount: 30000,
-    fees: 1200,
-    net: 28800,
-  },
-  {
-    country_code: "IT",
-    currency: "eur",
-    amount: 15000,
-    fees: 600,
-    net: 14400,
-  },
-  {
-    country_code: "AE",
-    currency: "aed",
-    amount: 10000,
-    fees: 400,
-    net: 9600,
-  },
-  {
-    country_code: "FR",
-    currency: "eur",
-    amount: 5000,
-    fees: 200,
-    net: 4800,
-  },
-];
 
 export const getOrdersAnalysisWorkflow = createWorkflow(
   "get-orders-kpis-workflow",
@@ -56,10 +26,11 @@ export const getOrdersAnalysisWorkflow = createWorkflow(
     };
     const kpis = getOrdersKPIsStep(KPIS_INPUT);
     const series = getOrdersSeriesStep(KPIS_INPUT);
+    const country_kpis = getOrdersCountriesSummaryStep(KPIS_INPUT);
     const RESULT = {
       kpis,
       series,
-      country_kpis: COUNTRYKPIS_MOCK,
+      country_kpis: country_kpis,
     };
     return new WorkflowResponse(RESULT);
   }

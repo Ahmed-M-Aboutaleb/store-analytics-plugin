@@ -3,6 +3,7 @@ import { AdminOrder } from "@medusajs/framework/types";
 import { sdk } from "../../utils/sdk";
 import { CurrencySelector } from "../../types";
 import { useDashboardFilters } from "../providers/dashboard-filter-context";
+import { resolveRange } from "../../utils/date";
 
 export type TableOrder = {
   id: string;
@@ -28,44 +29,67 @@ const fetchConversionRate = async (
       `/admin/analysis/convert-currency?base=${from}&target=${to}&amount=${amount}&date=${date}`,
       { method: "GET" }
     );
-    return amount * (data.result || 0);
+    return data.result || 0;
   } catch (e) {
     console.error(`Conversion failed for ${from}->${to}`, e);
     return amount;
   }
 };
-
 export const useOrdersTableData = () => {
-  const { filters } = useDashboardFilters();
+  const { filters } = useDashboardFilters(); // Get the global filters
   const [isLoading, setIsLoading] = useState(false);
   const [isNormalizing, setIsNormalizing] = useState(false);
 
   const [rawOrders, setRawOrders] = useState<AdminOrder[]>([]);
   const [totalCount, setTotalCount] = useState(0);
-
   const [tableOrders, setTableOrders] = useState<TableOrder[]>([]);
 
+  // Pagination State
   const [pageIndex, setPageIndex] = useState(0);
   const pageSize = 20;
 
-  const fetchOrders = useCallback(async (limit: number, offset: number) => {
-    setIsLoading(true);
-    try {
-      const response = await sdk.admin.order.list({
-        limit,
-        offset,
-        fields:
-          "id,display_id,created_at,currency_code,total,subtotal,tax_total,metadata,shipping_address.country_code",
-      });
-      setRawOrders(response.orders);
-      setTotalCount(response.count);
-    } catch (error) {
-      console.error("Error fetching orders:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // 1. Fetch Raw Orders with Date Filters
+  const fetchOrders = useCallback(
+    async (limit: number, offset: number) => {
+      setIsLoading(true);
+      try {
+        // Construct the query object
+        const range = resolveRange(
+          filters.dateRange.preset,
+          filters.dateRange.from.toISOString(),
+          filters.dateRange.to.toISOString()
+        );
+        const queryParams: Record<string, any> = {
+          limit,
+          offset,
+          fields:
+            "id,display_id,created_at,currency_code,total,subtotal,tax_total,metadata,shipping_address.country_code",
+          created_at: {
+            $gte: range.from.toISOString(), // Default to epoch start
+            $lte: range.to.toISOString(), // Default to now
+          },
+        };
 
+        const response = await sdk.admin.order.list(queryParams);
+
+        setRawOrders(response.orders);
+        setTotalCount(response.count);
+      } catch (error) {
+        console.error("Error fetching orders:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [filters.dateRange] // Re-create function when date range changes
+  );
+
+  // 2. Reset Pagination when Filters Change
+  // If user is on page 5 and changes date to "Today", we must go back to page 0
+  useEffect(() => {
+    setPageIndex(0);
+  }, [filters.dateRange, filters.currency]);
+
+  // 3. Normalization Logic (Mostly Unchanged)
   useEffect(() => {
     const processOrders = async () => {
       if (!rawOrders.length) {
@@ -138,6 +162,7 @@ export const useOrdersTableData = () => {
     processOrders();
   }, [rawOrders, filters.currency]);
 
+  // 4. Trigger Fetch when Page or Filters change
   useEffect(() => {
     fetchOrders(pageSize, pageIndex * pageSize);
   }, [fetchOrders, pageIndex, pageSize]);

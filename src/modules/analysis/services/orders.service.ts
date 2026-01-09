@@ -1,5 +1,6 @@
 import {
   Connection,
+  CountryKPI,
   CurrencyNormalizationService,
   CurrencySelector,
   OrderKPI,
@@ -181,6 +182,56 @@ class OrdersAnalysisService {
       })
       .where("o.created_at", ">=", fromDate)
       .where("o.created_at", "<=", toDate);
+  }
+  async getOrdersCountrySummary(
+    from: string,
+    to: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ): Promise<CountryKPI[]> {
+    const latestSummary = this.connection("order_summary as os_latest")
+      .select("order_id")
+      .max<{ version: number }>("version as version")
+      .whereNull("deleted_at")
+      .groupBy("order_id");
+
+    const rows = await this.connection({ o: "order" })
+      .leftJoin(latestSummary.as("os_latest"), "os_latest.order_id", "o.id")
+      .leftJoin({ os: "order_summary" }, function () {
+        this.on("os.order_id", "o.id")
+          .andOn("os.version", "os_latest.version")
+          .andOnNull("os.deleted_at");
+      })
+      .leftJoin({ sa: "order_address" }, "sa.id", "o.shipping_address_id")
+      .leftJoin({ ba: "order_address" }, "ba.id", "o.billing_address_id")
+      .select(
+        this.connection.raw(
+          "COALESCE(sa.country_code, ba.country_code) as country_code"
+        )
+      )
+      .select("o.currency_code")
+      .sum({
+        amount: this.connection.raw(
+          "COALESCE((os.totals ->> 'current_order_total')::numeric, 0)"
+        ) as any,
+      })
+      .sum({
+        fees: this.connection.raw(
+          "COALESCE((o.metadata ->> 'payment_gateway_fee')::numeric, 0)"
+        ) as any,
+      })
+      .whereBetween("o.created_at", [from, to])
+      .whereIn("o.status", allowedStatuses)
+      .groupByRaw(
+        "COALESCE(sa.country_code, ba.country_code), o.currency_code"
+      );
+
+    return rows.map((row: any) => ({
+      country_code: row.country_code ?? null,
+      currency: row.currency_code ?? null,
+      amount: Number(row.amount ?? 0),
+      fees: Number(row.fees ?? 0),
+      net: Number(row.amount ?? 0) - Number(row.fees ?? 0),
+    }));
   }
 }
 
