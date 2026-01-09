@@ -1,112 +1,92 @@
 import { Skeleton, Table } from "@medusajs/ui";
-import { useDashboardData } from "../../../providers/dashboard-data-context";
-import { useMemo, useState } from "react";
 import { formatDate } from "../../../../utils/date";
 import { formatMoney } from "../../../../utils/money";
+import {
+  useOrdersTableData,
+  TableOrder,
+} from "../../../hooks/use-orders-table-data";
 
 const OrdersTable = () => {
-  const { data, isLoading, refetch } = useDashboardData();
+  const { orders, count, isLoading, pagination } = useOrdersTableData();
 
-  const orders = data?.orders?.orders || [];
-  const KPIs = data?.orders?.kpis || [];
-  const ORDERS_COUNT = useMemo(() => {
-    return KPIs?.map((kpi) => kpi.total_orders).reduce((a, b) => a + b, 0) || 0;
-  }, [KPIs]);
-  const totalOrders = ORDERS_COUNT;
-
-  const [pageIndex, setPageIndex] = useState(0);
-  const pageSize = 200;
-
-  const pageCount = Math.ceil(totalOrders / pageSize);
-
-  const canNextPage = useMemo(
-    () => pageIndex < pageCount - 1,
-    [pageIndex, pageCount]
-  );
-  const canPreviousPage = useMemo(() => pageIndex - 1 >= 0, [pageIndex]);
-
-  const handlePageChange = (newIndex: number) => {
-    setPageIndex(newIndex);
-    refetch("orders", pageSize, newIndex * pageSize);
-  };
+  if (isLoading) {
+    return <Skeleton className="h-48 w-full mb-4 rounded-lg" />;
+  }
 
   return (
-    <>
-      {isLoading ? (
-        <Skeleton className="h-48 w-full mb-4" />
-      ) : (
-        <div className="overflow-x-auto">
-          <Table>
-            <Table.Header>
+    <div className="overflow-x-auto flex flex-col gap-4">
+      <div className="rounded-lg border border-ui-border-base bg-ui-bg-base overflow-hidden">
+        <Table>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell>#</Table.HeaderCell>
+              <Table.HeaderCell>Date</Table.HeaderCell>
+              <Table.HeaderCell>Country</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">
+                Subtotal
+              </Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Tax</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">Total</Table.HeaderCell>
+              <Table.HeaderCell className="text-right">
+                Gateway Fees
+              </Table.HeaderCell>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {orders.length === 0 ? (
               <Table.Row>
-                <Table.HeaderCell>#</Table.HeaderCell>
-                <Table.HeaderCell>Date</Table.HeaderCell>
-                <Table.HeaderCell>Country</Table.HeaderCell>
-                <Table.HeaderCell>Subtotal (before tax)</Table.HeaderCell>
-                <Table.HeaderCell>Customer Tax</Table.HeaderCell>
-                <Table.HeaderCell>Gross</Table.HeaderCell>
-                <Table.HeaderCell>Payment Gateway Fees</Table.HeaderCell>
+                <Table.Cell className="text-center text-ui-fg-subtle py-8">
+                  No orders found
+                </Table.Cell>
               </Table.Row>
-            </Table.Header>
-            <Table.Body>
-              {orders.length === 0 ? (
-                <Table.Row>
-                  <Table.Cell className="text-ui-fg-subtle">
-                    No orders found
-                  </Table.Cell>
-                </Table.Row>
-              ) : (
-                orders.map((order) => {
-                  const subtotal = Number(order.subtotal);
-                  const tax = Number(order.tax_total);
-                  const gross = Number(order.total);
-                  const fees = Number(order.metadata?.payment_gateway_fee);
-                  const feesCurrency: string | undefined = order.metadata
-                    ?.payment_gateway_currency as string | undefined;
+            ) : (
+              orders.map((order) => <OrderRow key={order.id} order={order} />)
+            )}
+          </Table.Body>
+        </Table>
+      </div>
 
-                  return (
-                    <Table.Row key={order.id}>
-                      <Table.Cell>
-                        {order.display_id ? `#${order.display_id}` : order.id}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {formatDate(order.created_at.toString())}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {order.shipping_address?.country_code?.toUpperCase() ||
-                          "N/A"}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {formatMoney(subtotal, order.currency_code)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {formatMoney(tax, order.currency_code)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {formatMoney(gross, order.currency_code)}
-                      </Table.Cell>
-                      <Table.Cell>
-                        {fees ? `${formatMoney(fees, feesCurrency)}` : "N/A"}
-                      </Table.Cell>
-                    </Table.Row>
-                  );
-                })
-              )}
-            </Table.Body>
-          </Table>
-          <Table.Pagination
-            count={totalOrders}
-            pageSize={pageSize}
-            pageIndex={pageIndex}
-            pageCount={pageCount}
-            canPreviousPage={canPreviousPage}
-            canNextPage={canNextPage}
-            previousPage={() => handlePageChange(pageIndex - 1)}
-            nextPage={() => handlePageChange(pageIndex + 1)}
-          />
-        </div>
-      )}
-    </>
+      <Table.Pagination
+        count={count}
+        pageSize={pagination.pageSize}
+        pageIndex={pagination.pageIndex}
+        pageCount={pagination.pageCount}
+        canPreviousPage={pagination.canPreviousPage}
+        canNextPage={pagination.canNextPage}
+        previousPage={pagination.previousPage}
+        nextPage={pagination.nextPage}
+      />
+    </div>
   );
 };
+
+const OrderRow = ({ order }: { order: TableOrder }) => {
+  return (
+    <Table.Row>
+      <Table.Cell>
+        {order.display_id ? `#${order.display_id}` : order.id.slice(0, 8)}
+      </Table.Cell>
+      <Table.Cell>{formatDate(order.created_at.toString())}</Table.Cell>
+      <Table.Cell>{order.country_code}</Table.Cell>
+      <Table.Cell className="text-right">
+        {formatMoney(order.subtotal, order.currency_code)}
+      </Table.Cell>
+      <Table.Cell className="text-right">
+        {formatMoney(order.tax_total, order.currency_code)}
+      </Table.Cell>
+      <Table.Cell className="text-right font-medium">
+        {formatMoney(order.total, order.currency_code)}
+      </Table.Cell>
+      <Table.Cell className="text-right text-ui-fg-subtle">
+        {order.payment_gateway_fee
+          ? formatMoney(
+              order.payment_gateway_fee,
+              order.payment_gateway_currency || order.currency_code
+            )
+          : "-"}
+      </Table.Cell>
+    </Table.Row>
+  );
+};
+
 export default OrdersTable;

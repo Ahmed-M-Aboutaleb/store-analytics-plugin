@@ -51,6 +51,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
           preset: filters.dateRange.preset,
           currency: filters.currency,
         };
+        console.log("Refetch called with:", { path, limit, offset });
         await new Promise((resolve) => setTimeout(resolve, 600));
 
         const mockProductsData: ProductsTabData = {
@@ -68,7 +69,6 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
             products: mockProductsData,
           };
         }
-        console.log("Fetched dashboard data:", newData);
         if (lastRequestId.current === requestId) {
           setData((prevData) => ({ ...prevData, ...newData }));
         }

@@ -22,8 +22,18 @@ class AnalysisModuleService {
     this.__pg_connection__ = __pg_connection__;
   }
 
-  async getOrderKPIs(fromDate: string, toDate: string): Promise<OrderKPI[]> {
-    return await this.ordersAnalysisService.getOrderKPIs(fromDate, toDate);
+  async getOrderKPIs(
+    fromDate: string,
+    toDate: string,
+    currency: CurrencySelector,
+    converter: CurrencyNormalizationService | null
+  ): Promise<OrderKPI[]> {
+    return await this.ordersAnalysisService.getOrderKPIs(
+      fromDate,
+      toDate,
+      currency,
+      converter
+    );
   }
 
   async getOrdersSeries(fromDate: string, toDate: string) {

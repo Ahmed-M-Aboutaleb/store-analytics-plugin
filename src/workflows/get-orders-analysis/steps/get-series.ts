@@ -1,7 +1,7 @@
 import { createStep, StepResponse } from "@medusajs/framework/workflows-sdk";
 import { ANALYSIS_MODULE } from "../../../modules/analysis";
 import AnalysisModuleService from "../../../modules/analysis/service";
-import { CurrencySelector, OrderKPI } from "../../../types";
+import { CurrencySelector, SeriesPoint } from "../../../types";
 
 type GetOrdersSeriesWorkflowInput = {
   fromDate: string;
@@ -9,8 +9,8 @@ type GetOrdersSeriesWorkflowInput = {
   currencyCode: CurrencySelector;
 };
 
-async function normalizeKPIsCurrency(
-  kpis: OrderKPI[],
+async function normalizeSalesCurrency(
+  sales: Record<string, SeriesPoint[]>,
   currencyCode: CurrencySelector,
   analysisModuleService: AnalysisModuleService,
   container: any
@@ -22,23 +22,34 @@ async function normalizeKPIsCurrency(
   if (!converter) {
     return;
   }
-  const normalizedKPIs: OrderKPI[] = [
-    {
-      currency_code: currencyCode,
-      total_orders: 0,
-      total_sales: 0,
-    },
-  ];
-  for (const kpi of kpis) {
-    normalizedKPIs[0].total_orders += kpi.total_orders;
-    normalizedKPIs[0].total_sales += await converter.convert(
-      kpi.total_sales,
-      kpi.currency_code,
-      currencyCode,
-      new Date()
-    );
+  // Normalize Orders Series
+  const normalizedSalesSeries = [] as { date: string; value: number }[];
+  for (const [currency, points] of Object.entries(sales)) {
+    for (const point of points) {
+      const convertedValue = await converter.convert(
+        point.value,
+        currency,
+        currencyCode,
+        new Date(point.date)
+      );
+      const existingPoint = normalizedSalesSeries.find(
+        (p) => p.date === point.date
+      );
+      if (existingPoint) {
+        existingPoint.value += convertedValue;
+      } else {
+        normalizedSalesSeries.push({
+          date: point.date,
+          value: convertedValue,
+        });
+      }
+    }
   }
-  return normalizedKPIs;
+  normalizedSalesSeries.sort((a, b) => a.date.localeCompare(b.date));
+
+  return {
+    [currencyCode]: normalizedSalesSeries,
+  };
 }
 
 const getOrdersSeriesStep = createStep(
@@ -54,6 +65,24 @@ const getOrdersSeriesStep = createStep(
       fromDate,
       toDate
     );
+    if (currencyCode !== "original") {
+      const normalizedSeries = await normalizeSalesCurrency(
+        series.sales,
+        currencyCode,
+        analysisModuleService,
+        container
+      );
+      return new StepResponse(
+        {
+          orders: series.orders,
+          sales: normalizedSeries!,
+        },
+        {
+          orders: series.orders,
+          sales: normalizedSeries!,
+        }
+      );
+    }
     return new StepResponse(series, series);
   },
   async (series) => {

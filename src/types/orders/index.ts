@@ -21,7 +21,6 @@ type OrdersResponse = {
     orders: SeriesPoint[];
     sales: Record<string, SeriesPoint[]>;
   };
-  orders: OrderDTO[];
   country_kpis: CountryKPI[];
 };
 

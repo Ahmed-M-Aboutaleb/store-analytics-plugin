@@ -11,30 +11,15 @@ type AnalyticsOrdersQuery = {
   limit?: number;
   offset?: number;
 };
+
 export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const {
-    preset,
-    from,
-    to,
-    currency,
-    country_summary,
-    limit,
-    offset,
-  }: AnalyticsOrdersQuery = req.validatedQuery;
+  const { preset, from, to, currency, country_summary }: AnalyticsOrdersQuery =
+    req.validatedQuery;
   const { from: resolvedFrom, to: resolvedTo } = resolveRange(
     preset!,
     from,
     to
   );
-  console.log("AnalyticsOrdersQuery: ", {
-    preset,
-    from: resolvedFrom,
-    to: resolvedTo,
-    currency,
-    country_summary,
-    limit,
-    offset,
-  });
   const { result } = await getOrdersAnalysisWorkflow(req.scope).run({
     input: {
       fromDate: resolvedFrom.toISOString(),

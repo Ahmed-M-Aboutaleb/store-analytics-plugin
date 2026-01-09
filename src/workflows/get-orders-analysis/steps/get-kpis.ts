@@ -9,38 +9,6 @@ type GetOrdersKPIsWorkflowInput = {
   currencyCode: CurrencySelector;
 };
 
-async function normalizeKPIsCurrency(
-  kpis: OrderKPI[],
-  currencyCode: CurrencySelector,
-  analysisModuleService: AnalysisModuleService,
-  container: any
-) {
-  const converter = analysisModuleService.resolveCurrencyConverter(
-    container,
-    currencyCode
-  );
-  if (!converter) {
-    return;
-  }
-  const normalizedKPIs: OrderKPI[] = [
-    {
-      currency_code: currencyCode,
-      total_orders: 0,
-      total_sales: 0,
-    },
-  ];
-  for (const kpi of kpis) {
-    normalizedKPIs[0].total_orders += kpi.total_orders;
-    normalizedKPIs[0].total_sales += await converter.convert(
-      kpi.total_sales,
-      kpi.currency_code,
-      currencyCode,
-      new Date()
-    );
-  }
-  return normalizedKPIs;
-}
-
 const getOrdersKPIsStep = createStep(
   "get-orders-kpis",
   async (
@@ -49,17 +17,16 @@ const getOrdersKPIsStep = createStep(
   ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
-
-    const kpis = await analysisModuleService.getOrderKPIs(fromDate, toDate);
-    if (currencyCode !== "original") {
-      const normalizedKPIs = await normalizeKPIsCurrency(
-        kpis,
-        currencyCode,
-        analysisModuleService,
-        container
-      );
-      return new StepResponse(normalizedKPIs, normalizedKPIs);
-    }
+    const converter = analysisModuleService.resolveCurrencyConverter(
+      container,
+      currencyCode
+    );
+    const kpis = await analysisModuleService.getOrderKPIs(
+      fromDate,
+      toDate,
+      currencyCode,
+      converter
+    );
     return new StepResponse(kpis, kpis);
   },
   async (kpis) => {

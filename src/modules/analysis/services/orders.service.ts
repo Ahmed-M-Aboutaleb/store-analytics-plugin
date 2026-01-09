@@ -1,94 +1,152 @@
-import { Connection, OrderKPI } from "../../../types";
+import {
+  Connection,
+  CurrencyNormalizationService,
+  CurrencySelector,
+  OrderKPI,
+} from "../../../types";
 
 type InjectedDependencies = {
   __pg_connection__: Connection;
 };
 
+type OrderKPIRow = {
+  day: Date;
+  currency_code: string;
+  daily_orders: string;
+  daily_sales: string;
+};
+
 class OrdersAnalysisService {
   protected connection: Connection;
+
   constructor({ __pg_connection__ }: InjectedDependencies) {
     this.connection = __pg_connection__;
   }
 
-  async getOrderKPIs(fromDate: string, toDate: string): Promise<OrderKPI[]> {
-    const ORDERS_SUMMARY = this.connection("order_summary as os_latest")
-      .select("order_id")
-      .max("version as version")
-      .whereNull("deleted_at")
-      .groupBy("order_id");
+  async getOrderKPIs(
+    fromDate: string,
+    toDate: string,
+    currency: CurrencySelector,
+    converter: CurrencyNormalizationService | null
+  ): Promise<OrderKPI[]> {
+    const query = this.getBaseQuery(fromDate, toDate);
 
-    const rows = await this.connection({ o: "order" })
-      .leftJoin(ORDERS_SUMMARY.as("os_latest"), "os_latest.order_id", "o.id")
-      .leftJoin({ os: "order_summary" }, function () {
-        this.on("os.order_id", "o.id")
-          .andOn("os.version", "os_latest.version")
-          .andOnNull("os.deleted_at");
-      })
-      .select("o.currency_code")
-      .count("o.id as total_orders")
-      .select(
-        this.connection.raw(
-          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as total_sales`
-        )
-      )
-      // Filters
-      .where("o.created_at", ">=", fromDate)
-      .where("o.created_at", "<=", toDate)
-      .groupBy("o.currency_code");
-
-    return (rows || []).map((row: any) => ({
-      currency_code: row.currency_code,
-      total_orders: Number(row.total_orders || 0),
-      total_sales: Number(row.total_sales || 0),
-    }));
-  }
-
-  async getOrdersSeries(fromDate: string, toDate: string) {
-    const ORDERS_SUMMARY = this.connection("order_summary as os_latest")
-      .select("order_id")
-      .max("version as version")
-      .whereNull("deleted_at")
-      .groupBy("order_id");
-
-    const rows = await this.connection({ o: "order" })
-      .leftJoin(ORDERS_SUMMARY.as("os_latest"), "os_latest.order_id", "o.id")
-      .leftJoin({ os: "order_summary" }, function () {
-        this.on("os.order_id", "o.id")
-          .andOn("os.version", "os_latest.version")
-          .andOnNull("os.deleted_at");
-      })
+    const rows: OrderKPIRow[] = await query
       .select([
         this.connection.raw("date_trunc('day', o.created_at) as day"),
         "o.currency_code",
       ])
-      .count("o.id as orders")
+      .count("o.id as daily_orders")
       .select(
         this.connection.raw(
-          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as sales`
+          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`
         )
       )
-      .where("o.created_at", ">=", fromDate)
-      .where("o.created_at", "<=", toDate)
+      .groupBy("day", "o.currency_code");
+
+    if (currency !== "original") {
+      return await this.normalizeKPISalesCurrency(rows, currency, converter);
+    }
+
+    return this.aggregateByOriginalCurrency(rows);
+  }
+
+  async getOrdersSeries(fromDate: string, toDate: string) {
+    const query = this.getBaseQuery(fromDate, toDate);
+
+    const rawRows = await query
+      .select([
+        this.connection.raw("date_trunc('day', o.created_at) as day"),
+        "o.currency_code",
+      ])
+      .count("o.id as daily_orders")
+      .select(
+        this.connection.raw(
+          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`
+        )
+      )
       .groupBy("day", "o.currency_code")
       .orderBy("day", "asc");
+    const rows: OrderKPIRow[] = rawRows.map((r) => ({
+      day: new Date(r.day as string),
+      currency_code: String(r.currency_code),
+      daily_orders: String(r.daily_orders ?? 0),
+      daily_sales: String(r.daily_sales ?? 0),
+    }));
+    return this.processSeriesData(rows);
+  }
 
+  private async normalizeKPISalesCurrency(
+    rows: OrderKPIRow[],
+    currency: CurrencySelector,
+    converter: CurrencyNormalizationService | null
+  ): Promise<OrderKPI[]> {
+    let totalNormalizedSales = 0;
+    let totalOrders = 0;
+
+    await Promise.all(
+      (rows || []).map(async (row) => {
+        const dayDate = new Date(row.day);
+        const originCurrency = row.currency_code;
+        const salesAmount = Number(row.daily_sales || 0);
+
+        totalOrders += Number(row.daily_orders || 0);
+
+        const convertedAmount = converter
+          ? await converter.convert(
+              salesAmount,
+              originCurrency,
+              currency,
+              dayDate
+            )
+          : salesAmount;
+
+        totalNormalizedSales += convertedAmount;
+      })
+    );
+
+    return [
+      {
+        currency_code: currency,
+        total_orders: totalOrders,
+        total_sales: totalNormalizedSales,
+      },
+    ];
+  }
+
+  private aggregateByOriginalCurrency(rows: OrderKPIRow[]): OrderKPI[] {
+    const aggregated: Record<string, OrderKPI> = {};
+
+    (rows || []).forEach((row) => {
+      const code = row.currency_code;
+      if (!aggregated[code]) {
+        aggregated[code] = {
+          currency_code: code,
+          total_orders: 0,
+          total_sales: 0,
+        };
+      }
+      aggregated[code].total_orders += Number(row.daily_orders || 0);
+      aggregated[code].total_sales += Number(row.daily_sales || 0);
+    });
+
+    return Object.values(aggregated);
+  }
+
+  private processSeriesData(rows: OrderKPIRow[]) {
     const salesSeries: Record<string, { date: string; value: number }[]> = {};
-
     const ordersMap = new Map<string, number>();
 
-    (rows || []).forEach((row: any) => {
+    (rows || []).forEach((row) => {
       const day = new Date(row.day).toISOString().split("T")[0];
       const currency = row.currency_code?.toLowerCase() || "unknown";
-      const orderCount = Number(row.orders || 0);
-      const salesAmount = Number(row.sales || 0);
+      const orderCount = Number(row.daily_orders || 0);
+      const salesAmount = Number(row.daily_sales || 0);
 
       if (!salesSeries[currency]) {
         salesSeries[currency] = [];
       }
-      salesSeries[currency].push({
-        date: day,
-        value: salesAmount,
-      });
+      salesSeries[currency].push({ date: day, value: salesAmount });
 
       const currentTotal = ordersMap.get(day) || 0;
       ordersMap.set(day, currentTotal + orderCount);
@@ -98,10 +156,31 @@ class OrdersAnalysisService {
       .map(([date, value]) => ({ date, value }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    return {
-      orders: ordersSeries,
-      sales: salesSeries,
-    };
+    return { orders: ordersSeries, sales: salesSeries };
+  }
+
+  private getBaseQuery(fromDate: string, toDate: string) {
+    const ORDERS_SUMMARY_SUBQUERY = this.connection(
+      "order_summary as os_latest"
+    )
+      .select("order_id")
+      .max("version as version")
+      .whereNull("deleted_at")
+      .groupBy("order_id");
+
+    return this.connection({ o: "order" })
+      .leftJoin(
+        ORDERS_SUMMARY_SUBQUERY.as("os_latest"),
+        "os_latest.order_id",
+        "o.id"
+      )
+      .leftJoin({ os: "order_summary" }, function () {
+        this.on("os.order_id", "o.id")
+          .andOn("os.version", "os_latest.version")
+          .andOnNull("os.deleted_at");
+      })
+      .where("o.created_at", ">=", fromDate)
+      .where("o.created_at", "<=", toDate);
   }
 }
 
