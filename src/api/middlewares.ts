@@ -2,7 +2,10 @@ import {
   validateAndTransformQuery,
   defineMiddlewares,
 } from "@medusajs/framework/http";
-import { AnalyticsOrdersQuerySchema } from "./validation-schemas";
+import {
+  AnalysisConvertCurrencyQuerySchema,
+  AnalyticsOrdersQuerySchema,
+} from "./validation-schemas";
 
 export default defineMiddlewares({
   routes: [
@@ -12,6 +15,15 @@ export default defineMiddlewares({
       middlewares: [
         validateAndTransformQuery(AnalyticsOrdersQuerySchema, {
           isList: true,
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/analysis/convert-currency",
+      method: "GET",
+      middlewares: [
+        validateAndTransformQuery(AnalysisConvertCurrencyQuerySchema, {
+          isList: false,
         }),
       ],
     },

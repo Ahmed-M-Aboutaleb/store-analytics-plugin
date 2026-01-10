@@ -1,3 +1,5 @@
+import { SeriesPoint } from "../types";
+
 function generateStableColor(
   input: string,
   saturation = 70,
@@ -26,4 +28,22 @@ function generateColorsForData<T extends Record<string, any>>(
   );
 }
 
-export { generateStableColor, generateColorsForData };
+const transformSalesForChart = (salesData: Record<string, SeriesPoint[]>) => {
+  const chartDataMap = new Map<string, Record<string, string | number>>();
+  const currencies = Object.keys(salesData);
+
+  currencies.forEach((currency) => {
+    const points = salesData[currency];
+    points.forEach((point) => {
+      const dayEntry = chartDataMap.get(point.date) || { date: point.date };
+      dayEntry[currency] = point.value;
+
+      chartDataMap.set(point.date, dayEntry);
+    });
+  });
+  return Array.from(chartDataMap.values()).sort((a, b) =>
+    String(a.date).localeCompare(String(b.date))
+  );
+};
+
+export { generateStableColor, generateColorsForData, transformSalesForChart };

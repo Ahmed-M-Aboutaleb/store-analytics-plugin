@@ -10,7 +10,7 @@ import CountryBreakdownTable from "../components/country-breakdown-table";
 const OrdersTab = () => {
   const { refetch } = useDashboardData();
   useEffect(() => {
-    refetch("/admin/dashboard/orders");
+    refetch("/admin/analysis/orders");
   }, [refetch]);
   return (
     <div className="flex gap-4 flex-col">

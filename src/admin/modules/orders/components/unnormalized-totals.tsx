@@ -12,7 +12,7 @@ const UnnormalizedTotals = ({
     </Text>
     <div className="flex flex-wrap gap-2">
       {totals.map((t) => (
-        <Badge key={t.currency} color="grey" className="tabular-nums">
+        <Badge key={t.currency} color="grey" className="tabular-nums h-fit p-2">
           {t.currency}: {formatMoney(t.amount, t.currency)} (Net:{" "}
           {formatMoney(t.net, t.currency)})
         </Badge>

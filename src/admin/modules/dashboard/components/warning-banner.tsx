@@ -8,7 +8,10 @@ const WarningBanner = ({
   className?: string;
 }) => {
   return (
-    <Badge color="orange" className={clx("w-fit", className)}>
+    <Badge
+      color="orange"
+      className={clx("w-fit text-xs p-2 sm:text-sm h-fit", className)}
+    >
       ⚠ {warning}
     </Badge>
   );

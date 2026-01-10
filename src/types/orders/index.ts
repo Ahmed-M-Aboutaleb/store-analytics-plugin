@@ -19,9 +19,8 @@ type OrdersResponse = {
   kpis: OrderKPI[];
   series: {
     orders: SeriesPoint[];
-    sales: SeriesPoint[];
+    sales: Record<string, SeriesPoint[]>;
   };
-  orders: OrderDTO[];
   country_kpis: CountryKPI[];
 };
 

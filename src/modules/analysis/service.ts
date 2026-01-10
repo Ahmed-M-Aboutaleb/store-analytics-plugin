@@ -1,6 +1,13 @@
-import { OrdersAnalysisService } from "./services";
-import { OrderKPI, Connection, TopVariant } from "../../types";
-import { ProductsAnalysisService } from "./services/products.service";
+import { OrdersAnalysisService, ProductsAnalysisService } from "./services";
+import {
+  OrderKPI,
+  Connection,
+  CurrencySelector,
+  CurrencyNormalizationService,
+  TopVariant,
+} from "../../types";
+import { MedusaRequest } from "@medusajs/framework";
+import { fawazAhmedConverter } from "../../utils/fawaz-converter";
 type InjectedDependencies = {
   ordersAnalysisService: OrdersAnalysisService;
   productsAnalysisService: ProductsAnalysisService;
@@ -20,11 +27,55 @@ class AnalysisModuleService {
     this.__pg_connection__ = __pg_connection__;
   }
 
-  async getOrderKPIs(fromDate: string, toDate: string): Promise<OrderKPI[]> {
-    return await this.ordersAnalysisService.getOrderKPIs(fromDate, toDate);
+  async getOrderKPIs(
+    fromDate: string,
+    toDate: string,
+    currency: CurrencySelector,
+    converter: CurrencyNormalizationService | null
+  ): Promise<OrderKPI[]> {
+    return await this.ordersAnalysisService.getOrderKPIs(
+      fromDate,
+      toDate,
+      currency,
+      converter
+    );
   }
-  async getProductVariants(fromDate: string, toDate: string): Promise<TopVariant[]> {
-    return await this.productsAnalysisService.getProductVariants(fromDate, toDate);
+
+  async getOrdersSeries(fromDate: string, toDate: string) {
+    return await this.ordersAnalysisService.getOrdersSeries(fromDate, toDate);
+  }
+
+  async getOrdersCountrySummary(fromDate: string, toDate: string) {
+    return await this.ordersAnalysisService.getOrdersCountrySummary(
+      fromDate,
+      toDate
+    );
+  }
+
+  resolveCurrencyConverter(
+    scope: MedusaRequest["scope"],
+    currency: CurrencySelector
+  ): CurrencyNormalizationService | null {
+    if (currency === "original") {
+      return null;
+    }
+
+    try {
+      return scope.resolve<CurrencyNormalizationService>(
+        "currencyNormalizationService"
+      );
+    } catch {
+      return fawazAhmedConverter;
+    }
+  }
+  async getProductVariants(
+    fromDate: string,
+    toDate: string
+  ): Promise<TopVariant[]> {
+    return await this.productsAnalysisService.getProductVariants(
+      fromDate,
+      toDate
+    );
   }
 }
 

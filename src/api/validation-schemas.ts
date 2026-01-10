@@ -62,3 +62,18 @@ export const AnalyticsOrdersQuerySchema = createFindParams()
   });
 
 export type AnalyticsOrdersQuery = z.infer<typeof AnalyticsOrdersQuerySchema>;
+
+const extchangeRateSchema = z.object({
+  base: z.string().describe("Base currency code to convert from."),
+  target: z
+    .enum(ALLOWED_CURRENCIES)
+    .describe("Target currency code for conversion."),
+  date: z.string().describe("Date for which to fetch the conversion rate."),
+  amount: z.string().describe("Amount to convert."),
+});
+
+export const AnalysisConvertCurrencyQuerySchema = extchangeRateSchema;
+
+export type AnalysisConvertCurrencyQuery = z.infer<
+  typeof AnalysisConvertCurrencyQuerySchema
+>;
