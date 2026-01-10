@@ -1,13 +1,12 @@
 import { Skeleton, Table, Text } from "@medusajs/ui";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const VariantsTable = () => {
   const { data, isLoading, refetch } = useDashboardData();
 
   const variants = data?.products?.top_variants || [];
 
-  // FIX 1: Fallback to variants.length if total_variants is missing
   const totalVariants = data?.products?.total_variants ?? variants.length;
 
   const [pageIndex, setPageIndex] = useState(0);
@@ -20,6 +19,10 @@ const VariantsTable = () => {
     [pageIndex, pageCount]
   );
   const canPreviousPage = useMemo(() => pageIndex > 0, [pageIndex]);
+
+  useEffect(() => {
+    setPageIndex(0);
+  }, [totalVariants]);
 
   const handlePageChange = (newIndex: number) => {
     setPageIndex(newIndex);

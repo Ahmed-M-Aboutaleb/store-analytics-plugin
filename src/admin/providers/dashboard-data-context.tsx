@@ -8,7 +8,6 @@ import {
 import { useDashboardFilters } from "./dashboard-filter-context";
 import { OrdersResponse, ProductsResponse } from "../../types";
 import { OrderDTO, OrderLineItemDTO } from "@medusajs/framework/types";
-import { mock } from "node:test";
 
 const ORDERS: OrderDTO[] = [
   {

@@ -10,4 +10,4 @@ type TopVariant = {
   quantity: number;
 };
 
-export { ProductsResponse };
+export { ProductsResponse, TopVariant };
