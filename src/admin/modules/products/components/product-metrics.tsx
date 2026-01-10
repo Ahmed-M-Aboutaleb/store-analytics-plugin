@@ -26,10 +26,8 @@ const ProductMetrics = () => {
         ))
       ) : (
         <>
-          {/* Card 1: Total Units Sold */}
           <MetricCard value={totalUnits} label="Total Units Sold" />
 
-          {/* Card 2: Total Variants */}
           <MetricCard
             value={totalVariants}
             label="Total Variants"
