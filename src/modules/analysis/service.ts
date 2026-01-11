@@ -1,31 +1,42 @@
-import { OrdersAnalysisService, ProductsAnalysisService } from "./services";
+import {
+  OrdersAnalysisService,
+  ProductsAnalysisService,
+  CustomersAnalysisService,
+} from "./services";
 import {
   OrderKPI,
   Connection,
   CurrencySelector,
   CurrencyNormalizationService,
   TopVariant,
+  CustomersKPI,
 } from "../../types";
 import { MedusaRequest } from "@medusajs/framework";
 import { fawazAhmedConverter } from "../../utils/fawaz-converter";
 type InjectedDependencies = {
   ordersAnalysisService: OrdersAnalysisService;
   productsAnalysisService: ProductsAnalysisService;
+  customersAnalysisService: CustomersAnalysisService;
   __pg_connection__: Connection;
 };
 class AnalysisModuleService {
   protected ordersAnalysisService: OrdersAnalysisService;
   protected productsAnalysisService: ProductsAnalysisService;
+  protected customersAnalysisService: CustomersAnalysisService;
   protected __pg_connection__: Connection;
   constructor({
     ordersAnalysisService,
     productsAnalysisService,
+    customersAnalysisService,
     __pg_connection__,
   }: InjectedDependencies) {
     this.ordersAnalysisService = ordersAnalysisService;
     this.productsAnalysisService = productsAnalysisService;
+    this.customersAnalysisService = customersAnalysisService;
     this.__pg_connection__ = __pg_connection__;
   }
+
+  /* ORDERS */
 
   async getOrderKPIs(
     fromDate: string,
@@ -52,6 +63,38 @@ class AnalysisModuleService {
     );
   }
 
+  /* PRODUCTS */
+
+  async getProductVariants(
+    fromDate: string,
+    toDate: string
+  ): Promise<TopVariant[]> {
+    return await this.productsAnalysisService.getProductVariants(
+      fromDate,
+      toDate
+    );
+  }
+
+  /* CUSTOMERS */
+
+  async getCustomersKPIs(
+    fromDate: string,
+    toDate: string
+  ): Promise<CustomersKPI> {
+    return await this.customersAnalysisService.getCustomersKPIs(
+      fromDate,
+      toDate
+    );
+  }
+  async getCustomersSeries(fromDate: string, toDate: string) {
+    return await this.customersAnalysisService.getCustomersSeries(
+      fromDate,
+      toDate
+    );
+  }
+
+  /* UTILITIES */
+
   resolveCurrencyConverter(
     scope: MedusaRequest["scope"],
     currency: CurrencySelector
@@ -67,15 +110,6 @@ class AnalysisModuleService {
     } catch {
       return fawazAhmedConverter;
     }
-  }
-  async getProductVariants(
-    fromDate: string,
-    toDate: string
-  ): Promise<TopVariant[]> {
-    return await this.productsAnalysisService.getProductVariants(
-      fromDate,
-      toDate
-    );
   }
 }
 

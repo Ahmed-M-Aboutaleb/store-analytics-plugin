@@ -77,7 +77,6 @@ const VariantsTable = () => {
                   </Table.Cell>
                 </Table.Row>
               ) : (
-                // FIX 2: Client-side slice ensures UI respects pageSize even if backend returns everything
                 variants
                   .slice(0, pageSize)
                   .map((variant: any, index: number) => {
@@ -85,7 +84,6 @@ const VariantsTable = () => {
                     const relativeWidth =
                       maxQuantity > 0 ? (quantity / maxQuantity) * 100 : 0;
 
-                    // FIX 3: Unique key generation
                     const rowKey =
                       variant.id ||
                       `${variant.product_title}-${variant.variant_title}-${index}`;

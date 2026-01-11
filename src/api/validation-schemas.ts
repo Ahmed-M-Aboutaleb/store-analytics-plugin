@@ -77,3 +77,32 @@ export const AnalysisConvertCurrencyQuerySchema = extchangeRateSchema;
 export type AnalysisConvertCurrencyQuery = z.infer<
   typeof AnalysisConvertCurrencyQuerySchema
 >;
+
+export const AnalyticsCustomersQuerySchema = createFindParams()
+  .merge(PresetSchema)
+  .merge(CurrencySelectorSchema)
+  .extend({
+    from: z.string().optional(),
+    to: z.string().optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.preset === "custom") {
+      if (!value.from) {
+        ctx.addIssue({
+          code: "custom",
+          message: "'from' is required when preset is custom",
+          path: ["from"],
+        });
+      }
+      if (!value.to) {
+        ctx.addIssue({
+          code: "custom",
+          message: "'to' is required when preset is custom",
+          path: ["to"],
+        });
+      }
+    }
+  });
+export type AnalyticsCustomersQuery = z.infer<
+  typeof AnalyticsCustomersQuerySchema
+>;

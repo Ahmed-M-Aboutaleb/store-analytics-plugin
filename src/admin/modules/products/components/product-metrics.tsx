@@ -1,6 +1,6 @@
-import { ShoppingBag, Trophy } from "@medusajs/icons";
+import { ShoppingBag } from "@medusajs/icons";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
-import MetricCard from "./metric-card";
+import MetricCard from "../../dashboard/components/metric-card";
 import { Skeleton } from "@medusajs/ui";
 import { useMemo } from "react";
 

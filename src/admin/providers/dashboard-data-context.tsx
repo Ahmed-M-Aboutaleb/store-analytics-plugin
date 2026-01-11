@@ -7,7 +7,11 @@ import {
   useState,
 } from "react";
 import { useDashboardFilters } from "./dashboard-filter-context";
-import { OrdersResponse, ProductsResponse } from "../../types";
+import {
+  OrdersResponse,
+  ProductsResponse,
+  CustomersResponse,
+} from "../../types";
 
 const ALL_MOCK_VARIANTS = [
   { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
@@ -35,6 +39,7 @@ import { sdk } from "../../utils/sdk";
 type DashboardData = {
   orders: OrdersResponse;
   products: ProductsResponse;
+  customers: CustomersResponse;
 };
 
 type DashboardDataContextType = {
@@ -79,6 +84,11 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
             query: params,
           });
           newData = { orders: response };
+        } else if (path.includes("customers")) {
+          const response = await sdk.client.fetch<CustomersResponse>(path, {
+            query: params,
+          });
+          newData = { customers: response };
         } else {
           const mockProductsData: ProductsResponse = {
             top_variants: ALL_MOCK_VARIANTS.slice(offset, offset + limit),

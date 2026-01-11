@@ -9,7 +9,7 @@ const ProductTab = () => {
   const { refetch } = useDashboardData();
 
   useEffect(() => {
-    refetch("/admin/dashboard/products");
+    refetch("/admin/analysis/products");
   }, [refetch]);
 
   return (

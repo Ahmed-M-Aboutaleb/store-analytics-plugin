@@ -4,6 +4,7 @@ import {
 } from "@medusajs/framework/http";
 import {
   AnalysisConvertCurrencyQuerySchema,
+  AnalyticsCustomersQuerySchema,
   AnalyticsOrdersQuerySchema,
 } from "./validation-schemas";
 
@@ -24,6 +25,15 @@ export default defineMiddlewares({
       middlewares: [
         validateAndTransformQuery(AnalysisConvertCurrencyQuerySchema, {
           isList: false,
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/dashboard/customers",
+      method: "GET",
+      middlewares: [
+        validateAndTransformQuery(AnalyticsCustomersQuerySchema, {
+          isList: true,
         }),
       ],
     },
