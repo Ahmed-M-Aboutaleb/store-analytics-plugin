@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import VariantsTable from "../components/variants-table";
 import Surface from "../../dashboard/components/surface";
 import { Divider, Heading } from "@medusajs/ui";
-import ProductMetrics from "../components/product-metrics";
+// import ProductMetrics from "../components/product-metrics";
 
 const ProductTab = () => {
   const { refetch } = useDashboardData();
@@ -14,7 +14,7 @@ const ProductTab = () => {
 
   return (
     <div className="flex gap-4 flex-col">
-      <ProductMetrics />
+      {/* <ProductMetrics /> */}
 
       <Surface>
         <div className="flex items-center justify-between mb-2">

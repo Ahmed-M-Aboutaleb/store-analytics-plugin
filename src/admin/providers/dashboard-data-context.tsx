@@ -90,13 +90,10 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
           });
           newData = { customers: response };
         } else {
-          const mockProductsData: ProductsResponse = {
-            top_variants: ALL_MOCK_VARIANTS.slice(offset, offset + limit),
-            total_variants: ALL_MOCK_VARIANTS.length,
-          };
-          newData = {
-            products: mockProductsData,
-          };
+          const response = await sdk.client.fetch<ProductsResponse>(path, {
+            query: params,
+          });
+          newData = { products: response };
         }
         if (lastRequestId.current === requestId) {
           setData((prevData) => ({ ...prevData, ...newData }));

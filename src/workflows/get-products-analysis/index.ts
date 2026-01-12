@@ -2,10 +2,7 @@ import {
   createWorkflow,
   WorkflowResponse,
 } from "@medusajs/framework/workflows-sdk";
-import {
-  getProductVariantsStep,
-  GetProductVariantsWorkflowInput,
-} from "./steps/get-variants";
+import { getProductVariantsStep } from "./steps/get-variants";
 
 type GetProductsAnalysisWorkflowInput = {
   fromDate: string;

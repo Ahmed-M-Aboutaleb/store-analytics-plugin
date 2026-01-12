@@ -6,6 +6,7 @@ import {
   AnalysisConvertCurrencyQuerySchema,
   AnalyticsCustomersQuerySchema,
   AnalyticsOrdersQuerySchema,
+  AnalyticsProductsQuerySchema,
 } from "./validation-schemas";
 
 export default defineMiddlewares({
@@ -29,10 +30,19 @@ export default defineMiddlewares({
       ],
     },
     {
-      matcher: "/admin/dashboard/customers",
+      matcher: "/admin/analysis/customers",
       method: "GET",
       middlewares: [
         validateAndTransformQuery(AnalyticsCustomersQuerySchema, {
+          isList: true,
+        }),
+      ],
+    },
+    {
+      matcher: "/admin/analysis/products",
+      method: "GET",
+      middlewares: [
+        validateAndTransformQuery(AnalyticsProductsQuerySchema, {
           isList: true,
         }),
       ],

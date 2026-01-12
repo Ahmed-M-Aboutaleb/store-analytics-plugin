@@ -7,34 +7,20 @@ type AnalyticsProductsQuery = {
   preset?: Preset;
   from?: string;
   to?: string;
-  // currency_code?: string;
-  limit?: number; 
-  offset?: number; 
+  limit?: number;
 };
 
-export async function GET(req: MedusaRequest, res: MedusaResponse) {
-  const {
-    preset,
-    from,
-    to,
-    // currency_code,
-    limit = 10,
-    offset = 0,
-  }: AnalyticsProductsQuery = req.validatedQuery;
+export async function GET(
+  req: MedusaRequest<AnalyticsProductsQuery>,
+  res: MedusaResponse
+) {
+  const { preset, from, to }: AnalyticsProductsQuery = req.validatedQuery;
 
   const { from: resolvedFrom, to: resolvedTo } = resolveRange(
     preset!,
     from,
     to
   );
-
-  console.log("Product Analytics Settings: ", {
-    limit,
-    offset,
-    // currency_code,
-    resolvedFrom,
-    resolvedTo,
-  });
 
   const { result } = await getProductAnalysisWorkflow(req.scope).run({
     input: {
@@ -43,5 +29,5 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     },
   });
 
-  res.status(200).json({ ...result });
+  res.status(200).json({ top_variants: result.variants });
 }

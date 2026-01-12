@@ -9,6 +9,8 @@ export const PresetSchema = z.object({
     .optional()
     .default("this-month")
     .describe(`Preset for date range. One of: ${PRESETS.join(", ")}`),
+  from: z.string().optional(),
+  to: z.string().optional(),
 });
 
 export const CurrencySelectorSchema = z.object({
@@ -38,22 +40,18 @@ export const AnalyticsOrdersQuerySchema = createFindParams()
   .merge(PresetSchema)
   .merge(CurrencySelectorSchema)
   .merge(CountrySummarySchema)
-  .extend({
-    from: z.string().optional(),
-    to: z.string().optional(),
-  })
   .superRefine((value, ctx) => {
     if (value.preset === "custom") {
       if (!value.from) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "'from' is required when preset is custom",
           path: ["from"],
         });
       }
       if (!value.to) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "'to' is required when preset is custom",
           path: ["to"],
         });
@@ -81,22 +79,18 @@ export type AnalysisConvertCurrencyQuery = z.infer<
 export const AnalyticsCustomersQuerySchema = createFindParams()
   .merge(PresetSchema)
   .merge(CurrencySelectorSchema)
-  .extend({
-    from: z.string().optional(),
-    to: z.string().optional(),
-  })
   .superRefine((value, ctx) => {
     if (value.preset === "custom") {
       if (!value.from) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "'from' is required when preset is custom",
           path: ["from"],
         });
       }
       if (!value.to) {
         ctx.addIssue({
-          code: "custom",
+          code: z.ZodIssueCode.custom,
           message: "'to' is required when preset is custom",
           path: ["to"],
         });
@@ -106,3 +100,24 @@ export const AnalyticsCustomersQuerySchema = createFindParams()
 export type AnalyticsCustomersQuery = z.infer<
   typeof AnalyticsCustomersQuerySchema
 >;
+
+export const AnalyticsProductsQuerySchema = PresetSchema.superRefine(
+  (value, ctx) => {
+    if (value.preset === "custom") {
+      if (!value.from) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "'from' is required when preset is custom",
+          path: ["from"],
+        });
+      }
+      if (!value.to) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "'to' is required when preset is custom",
+          path: ["to"],
+        });
+      }
+    }
+  }
+);
