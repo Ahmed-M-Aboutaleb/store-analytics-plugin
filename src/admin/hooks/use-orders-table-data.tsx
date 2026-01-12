@@ -68,6 +68,7 @@ export const useOrdersTableData = () => {
             $gte: range.from.toISOString(), // Default to epoch start
             $lte: range.to.toISOString(), // Default to now
           },
+          status: ["completed", "pending"],
         };
 
         const response = await sdk.admin.order.list(queryParams);
