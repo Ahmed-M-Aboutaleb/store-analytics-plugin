@@ -68,6 +68,7 @@
     "node": ">=20"
   },
   "dependencies": {
-    "recharts": "^3.6.0"
+    "recharts": "^3.6.0",
+    "stripe": "^20.1.2"
   }
 }

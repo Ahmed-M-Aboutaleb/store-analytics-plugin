@@ -6,7 +6,7 @@ type CurrencyNormalizationService = {
   convert: (
     amount: number,
     from: string | null,
-    to: CurrencySelector,
+    to: CurrencySelector | string,
     at: Date
   ) => Promise<number>;
 };

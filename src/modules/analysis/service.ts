@@ -42,24 +42,39 @@ class AnalysisModuleService {
     fromDate: string,
     toDate: string,
     currency: CurrencySelector,
-    converter: CurrencyNormalizationService | null
+    converter: CurrencyNormalizationService | null,
+    allowedStatuses: string[] = ["completed", "pending"]
   ): Promise<OrderKPI[]> {
     return await this.ordersAnalysisService.getOrderKPIs(
       fromDate,
       toDate,
       currency,
-      converter
+      converter,
+      allowedStatuses
     );
   }
 
-  async getOrdersSeries(fromDate: string, toDate: string) {
-    return await this.ordersAnalysisService.getOrdersSeries(fromDate, toDate);
+  async getOrdersSeries(
+    fromDate: string,
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ) {
+    return await this.ordersAnalysisService.getOrdersSeries(
+      fromDate,
+      toDate,
+      allowedStatuses
+    );
   }
 
-  async getOrdersCountrySummary(fromDate: string, toDate: string) {
+  async getOrdersCountrySummary(
+    fromDate: string,
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ) {
     return await this.ordersAnalysisService.getOrdersCountrySummary(
       fromDate,
-      toDate
+      toDate,
+      allowedStatuses
     );
   }
 

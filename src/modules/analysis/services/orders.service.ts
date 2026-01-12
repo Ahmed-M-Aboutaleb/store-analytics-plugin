@@ -28,9 +28,10 @@ class OrdersAnalysisService {
     fromDate: string,
     toDate: string,
     currency: CurrencySelector,
-    converter: CurrencyNormalizationService | null
+    converter: CurrencyNormalizationService | null,
+    allowedStatuses: string[] = ["completed", "pending"]
   ): Promise<OrderKPI[]> {
-    const query = this.getBaseQuery(fromDate, toDate);
+    const query = this.getBaseQuery(fromDate, toDate, allowedStatuses);
 
     const rows: OrderKPIRow[] = await query
       .select([
@@ -52,8 +53,12 @@ class OrdersAnalysisService {
     return this.aggregateByOriginalCurrency(rows);
   }
 
-  async getOrdersSeries(fromDate: string, toDate: string) {
-    const query = this.getBaseQuery(fromDate, toDate);
+  async getOrdersSeries(
+    fromDate: string,
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ) {
+    const query = this.getBaseQuery(fromDate, toDate, allowedStatuses);
 
     const rawRows = await query
       .select([
@@ -68,13 +73,54 @@ class OrdersAnalysisService {
       )
       .groupBy("day", "o.currency_code")
       .orderBy("day", "asc");
+
     const rows: OrderKPIRow[] = rawRows.map((r) => ({
       day: new Date(r.day as string),
       currency_code: String(r.currency_code),
       daily_orders: String(r.daily_orders ?? 0),
       daily_sales: String(r.daily_sales ?? 0),
     }));
+
     return this.processSeriesData(rows);
+  }
+
+  async getOrdersCountrySummary(
+    from: string,
+    to: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ): Promise<CountryKPI[]> {
+    const query = this.getBaseQuery(from, to, allowedStatuses);
+
+    const rows = await query
+      .leftJoin({ sa: "order_address" }, "sa.id", "o.shipping_address_id")
+      .leftJoin({ ba: "order_address" }, "ba.id", "o.billing_address_id")
+      .select(
+        this.connection.raw(
+          "COALESCE(sa.country_code, ba.country_code) as country_code"
+        )
+      )
+      .select("o.currency_code")
+      .sum({
+        amount: this.connection.raw(
+          "COALESCE((os.totals ->> 'current_order_total')::numeric, 0)"
+        ) as any,
+      })
+      .sum({
+        fees: this.connection.raw(
+          "COALESCE((o.metadata ->> 'payment_gateway_fee')::numeric, 0)"
+        ) as any,
+      })
+      .groupByRaw(
+        "COALESCE(sa.country_code, ba.country_code), o.currency_code"
+      );
+
+    return rows.map((row: any) => ({
+      country_code: row.country_code ?? null,
+      currency: row.currency_code ?? null,
+      amount: Number(row.amount ?? 0),
+      fees: Number(row.fees ?? 0),
+      net: Number(row.amount ?? 0) - Number(row.fees ?? 0),
+    }));
   }
 
   private async normalizeKPISalesCurrency(
@@ -160,7 +206,11 @@ class OrdersAnalysisService {
     return { orders: ordersSeries, sales: salesSeries };
   }
 
-  private getBaseQuery(fromDate: string, toDate: string) {
+  private getBaseQuery(
+    fromDate: string,
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"]
+  ) {
     const ORDERS_SUMMARY_SUBQUERY = this.connection(
       "order_summary as os_latest"
     )
@@ -181,57 +231,8 @@ class OrdersAnalysisService {
           .andOnNull("os.deleted_at");
       })
       .where("o.created_at", ">=", fromDate)
-      .where("o.created_at", "<=", toDate);
-  }
-  async getOrdersCountrySummary(
-    from: string,
-    to: string,
-    allowedStatuses: string[] = ["completed", "pending"]
-  ): Promise<CountryKPI[]> {
-    const latestSummary = this.connection("order_summary as os_latest")
-      .select("order_id")
-      .max<{ version: number }>("version as version")
-      .whereNull("deleted_at")
-      .groupBy("order_id");
-
-    const rows = await this.connection({ o: "order" })
-      .leftJoin(latestSummary.as("os_latest"), "os_latest.order_id", "o.id")
-      .leftJoin({ os: "order_summary" }, function () {
-        this.on("os.order_id", "o.id")
-          .andOn("os.version", "os_latest.version")
-          .andOnNull("os.deleted_at");
-      })
-      .leftJoin({ sa: "order_address" }, "sa.id", "o.shipping_address_id")
-      .leftJoin({ ba: "order_address" }, "ba.id", "o.billing_address_id")
-      .select(
-        this.connection.raw(
-          "COALESCE(sa.country_code, ba.country_code) as country_code"
-        )
-      )
-      .select("o.currency_code")
-      .sum({
-        amount: this.connection.raw(
-          "COALESCE((os.totals ->> 'current_order_total')::numeric, 0)"
-        ) as any,
-      })
-      .sum({
-        fees: this.connection.raw(
-          "COALESCE((o.metadata ->> 'payment_gateway_fee')::numeric, 0)"
-        ) as any,
-      })
-      .whereBetween("o.created_at", [from, to])
-      .whereIn("o.status", allowedStatuses)
-      .groupByRaw(
-        "COALESCE(sa.country_code, ba.country_code), o.currency_code"
-      );
-
-    return rows.map((row: any) => ({
-      country_code: row.country_code ?? null,
-      currency: row.currency_code ?? null,
-      amount: Number(row.amount ?? 0),
-      fees: Number(row.fees ?? 0),
-      net: Number(row.amount ?? 0) - Number(row.fees ?? 0),
-    }));
+      .where("o.created_at", "<=", toDate)
+      .whereIn("o.status", allowedStatuses);
   }
 }
 
