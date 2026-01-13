@@ -92,6 +92,9 @@ export default async function orderPlacedHandler({
 }
 
 export const config: SubscriberConfig = {
+  context: {
+    subscriberId: "stripe-payment-gateway-fees-order-placed",
+  },
   event: "order.placed",
 };
 

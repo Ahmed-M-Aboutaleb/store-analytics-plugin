@@ -1,5 +1,5 @@
 {
-  "name": "@iifire/store-analytics-plugin",
+  "name": "@iifire/store-analysis-plugin",
   "publishConfig": {
     "access": "public"
   },
