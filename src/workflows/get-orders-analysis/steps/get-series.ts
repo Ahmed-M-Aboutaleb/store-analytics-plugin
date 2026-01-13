@@ -30,7 +30,7 @@ async function normalizeSalesCurrency(
         point.value,
         currency,
         currencyCode,
-        new Date(point.date)
+        new Date(`${point.date}T12:00:00Z`)
       );
       const existingPoint = normalizedSalesSeries.find(
         (p) => p.date === point.date

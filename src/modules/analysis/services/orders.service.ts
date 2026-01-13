@@ -137,7 +137,7 @@ class OrdersAnalysisService {
 
     await Promise.all(
       (rows || []).map(async (row) => {
-        const dayDate = new Date(row.day);
+        const dayDate = new Date(`${row.day}T12:00:00Z`);
         const originCurrency = row.currency_code;
         const salesAmount = Number(row.daily_sales || 0);
 

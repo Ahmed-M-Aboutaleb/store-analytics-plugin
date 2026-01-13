@@ -15,11 +15,11 @@ const FiltersComponent = () => {
         </Text>
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-3">
           <CurrencySelectorComponent />
-          <div className="flex justify-center items-center gap-4 md:gap-2">
+          {/* <div className="flex justify-center items-center gap-4 md:gap-2">
             <Button size="small" variant="secondary" onClick={() => {}}>
               {false ? "Copied" : "Share link"}
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
       <PresetSelector />

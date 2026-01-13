@@ -97,5 +97,6 @@ export const formatDate = (dateString: string) => {
     year: "numeric",
     month: "short",
     day: "numeric",
+    timeZone: "UTC",
   });
 };
