@@ -11,7 +11,7 @@ type InjectedDependencies = {
 };
 
 type OrderKPIRow = {
-  day: Date;
+  day: string;
   currency_code: string;
   daily_orders: string;
   daily_sales: string;
@@ -35,7 +35,9 @@ class OrdersAnalysisService {
 
     const rows: OrderKPIRow[] = await query
       .select([
-        this.connection.raw("date_trunc('day', o.created_at) as day"),
+        this.connection.raw(
+          "TO_CHAR(date_trunc('day', o.created_at), 'YYYY-MM-DD') as day"
+        ),
         "o.currency_code",
       ])
       .count("o.id as daily_orders")
@@ -62,7 +64,9 @@ class OrdersAnalysisService {
 
     const rawRows = await query
       .select([
-        this.connection.raw("date_trunc('day', o.created_at) as day"),
+        this.connection.raw(
+          "TO_CHAR(date_trunc('day', o.created_at), 'YYYY-MM-DD') as day"
+        ),
         "o.currency_code",
       ])
       .count("o.id as daily_orders")
@@ -75,7 +79,7 @@ class OrdersAnalysisService {
       .orderBy("day", "asc");
 
     const rows: OrderKPIRow[] = rawRows.map((r) => ({
-      day: new Date(r.day as string),
+      day: r.day.toString(),
       currency_code: String(r.currency_code),
       daily_orders: String(r.daily_orders ?? 0),
       daily_sales: String(r.daily_sales ?? 0),
@@ -185,7 +189,7 @@ class OrdersAnalysisService {
     const ordersMap = new Map<string, number>();
 
     (rows || []).forEach((row) => {
-      const day = new Date(row.day).toISOString().split("T")[0];
+      const day = row.day;
       const currency = row.currency_code?.toLowerCase() || "unknown";
       const orderCount = Number(row.daily_orders || 0);
       const salesAmount = Number(row.daily_sales || 0);
