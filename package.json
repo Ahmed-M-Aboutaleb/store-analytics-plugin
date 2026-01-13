@@ -1,6 +1,9 @@
 {
-  "name": "@ps-tech/store-analytics-plugin",
-  "version": "0.0.6",
+  "name": "@iifire/store-analytics-plugin",
+  "publishConfig": {
+    "access": "public"
+  },
+  "version": "1.0.0",
   "description": "A Medusa plugin to provide store analytics features.",
   "author": "Ahmed-M-Aboutaleb <ahmed.aboutaleb.work@gmail.com>",
   "license": "MIT",
