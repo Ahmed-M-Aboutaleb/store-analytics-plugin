@@ -34,10 +34,13 @@ class CustomersAnalysisService {
   }
 
   async getCustomersSeries(fromDate: string, toDate: string) {
+    console.log("Fetching customers series from", fromDate, "to", toDate);
     const rawRows = await this.connection
       .from(this.getFirstOrderSubquery())
       .select([
-        this.connection.raw("date_trunc('day', first_order_at)::date as day"),
+        this.connection.raw(
+          "TO_CHAR(date_trunc('day', first_order_at), 'YYYY-MM-DD') as day"
+        ),
       ])
       .where("first_order_at", ">=", fromDate)
       .where("first_order_at", "<=", toDate)
@@ -46,7 +49,7 @@ class CustomersAnalysisService {
       .orderBy("day", "asc");
 
     const rows = rawRows.map((r) => ({
-      day: new Date(r.day),
+      day: r.day,
       count: String(r.count ?? 0),
     }));
 
@@ -57,7 +60,7 @@ class CustomersAnalysisService {
     return this.connection("order")
       .select("customer_id")
       .min("created_at as first_order_at")
-      .whereNotNull("customer_id") // Exclude guest checkouts if necessary
+      .whereNotNull("customer_id")
       .groupBy("customer_id")
       .as("first_orders");
   }
@@ -68,7 +71,7 @@ class CustomersAnalysisService {
     }
 
     return rows.map((row) => ({
-      date: row.day.toISOString().split("T")[0],
+      date: row.day,
       count: Number(row.count),
     }));
   }

@@ -21,7 +21,6 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
     from,
     to
   );
-
   const { result } = await getCustomersAnalysisWorkflow(req.scope).run({
     input: {
       fromDate: resolvedFrom.toISOString(),

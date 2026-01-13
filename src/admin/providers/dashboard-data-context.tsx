@@ -13,28 +13,7 @@ import {
   CustomersResponse,
 } from "../../types";
 
-const ALL_MOCK_VARIANTS = [
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda", quantity: 2 },
-  { product_title: "Sandwich", variant_title: "kpda_spicy", quantity: 5 },
-];
-
 import { sdk } from "../../utils/sdk";
-
-// type ProductsTabData = {
-//   totalProducts: number;
-//   totalInventory: number;
-// };
 
 type DashboardData = {
   orders: OrdersResponse;

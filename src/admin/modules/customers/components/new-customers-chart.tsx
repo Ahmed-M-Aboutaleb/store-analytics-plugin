@@ -6,24 +6,13 @@ import { LineChart } from "../../dashboard/components/line-chart";
 const NewCustomersChart = () => {
   const { isLoading, data } = useDashboardData();
 
-  // Memoize the series data to avoid unnecessary re-renders
   const customersData = useMemo(
     () => data?.customers?.series || [],
     [data?.customers?.series]
   );
 
-  //   const customersData = [
-  //     { date: "2023-10-01", count: 12 },
-  //     { date: "2023-10-02", count: 18 },
-  //     { date: "2023-10-03", count: 15 },
-  //     { date: "2023-10-04", count: 25 },
-  //     { date: "2023-10-05", count: 32 },
-  //     { date: "2023-10-06", count: 28 },
-  //     { date: "2023-10-07", count: 40 },
-  //   ];
-
   return (
-    <div className="bg-[#111827] rounded-xl border border-gray-800 p-6 shadow-sm">
+    <div className="rounded-xl border border-gray-800 p-6 shadow-sm">
       <div className="text-center">
         <Heading level="h3" className="mb-6 text-white text-left">
           New Customers Over Time
