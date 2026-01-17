@@ -77,7 +77,7 @@ const CountryBreakdownTable = () => {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="border border-ui-border-base rounded-lg overflow-hidden bg-ui-bg-base">
+      <div className="border overflow-x-auto border-ui-border-base rounded-lg overflow-hidden bg-ui-bg-base">
         <Table>
           <Table.Header>
             <Table.Row>

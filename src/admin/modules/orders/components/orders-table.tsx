@@ -14,8 +14,8 @@ const OrdersTable = () => {
   }
 
   return (
-    <div className="overflow-x-auto flex flex-col gap-4">
-      <div className="rounded-lg border border-ui-border-base bg-ui-bg-base overflow-hidden">
+    <div className="flex flex-col gap-4">
+      <div className="rounded-lg overflow-x-auto border border-ui-border-base bg-ui-bg-base overflow-hidden">
         <Table>
           <Table.Header>
             <Table.Row>

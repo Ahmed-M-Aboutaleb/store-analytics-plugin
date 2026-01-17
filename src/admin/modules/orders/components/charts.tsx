@@ -1,13 +1,11 @@
 import { Heading, Skeleton, Text } from "@medusajs/ui";
 import { useDashboardData } from "../../../providers/dashboard-data-context";
 import { LineChart } from "../../dashboard/components/line-chart";
-import { useDashboardFilters } from "../../../providers/dashboard-filter-context";
 import { StackedBarChart } from "../../dashboard/components/stacked-bar-chart";
 import { useMemo } from "react";
 import { transformSalesForChart } from "../../../../utils/charts";
 
 const OrderCharts = () => {
-  const { filters } = useDashboardFilters();
   const { isLoading, data } = useDashboardData();
   const rawSalesData = useMemo(
     () => data?.orders?.series?.sales || {},
