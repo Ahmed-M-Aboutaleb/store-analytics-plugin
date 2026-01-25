@@ -17,7 +17,9 @@ class ProductsAnalysisService {
     allowedStatuses: string[] = ["completed", "pending"],
   ): Promise<TopVariant[]> {
     const results = await this.getBaseQuery(fromDate, toDate, allowedStatuses)
-      .join({ oi: "order_item" }, "oi.order_id", "o.id")
+      .join({ oi: "order_item" }, function () {
+        this.on("oi.order_id", "o.id").andOn("oi.version", "os_latest.version");
+      })
       .join({ oli: "order_line_item" }, "oi.item_id", "oli.id")
       .select([
         "oli.product_title",

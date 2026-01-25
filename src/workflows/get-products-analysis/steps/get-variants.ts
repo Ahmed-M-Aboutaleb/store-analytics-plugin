@@ -9,11 +9,17 @@ type GetProductVariantsWorkflowInput = {
 
 const getProductVariantsStep = createStep(
   "get-product-variants",
-  async ({ fromDate, toDate }: GetProductVariantsWorkflowInput, { container }) => {
+  async (
+    { fromDate, toDate }: GetProductVariantsWorkflowInput,
+    { container },
+  ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
 
-    const variants = await analysisModuleService.getProductVariants(fromDate, toDate);
+    const variants = await analysisModuleService.getProductVariants(
+      fromDate,
+      toDate,
+    );
 
     return new StepResponse(variants, variants);
   },
@@ -21,7 +27,7 @@ const getProductVariantsStep = createStep(
     if (!variants) {
       return new StepResponse(null, null);
     }
-  }
+  },
 );
 
 export { getProductVariantsStep, GetProductVariantsWorkflowInput };
