@@ -1,5 +1,9 @@
 import { Preset, ResolvedRange } from "../types";
 
+export const getUserTimezone = () => {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};
+
 export const enforceUTCDate = (localDate: Date) => {
   return new Date(
     Date.UTC(
@@ -9,8 +13,8 @@ export const enforceUTCDate = (localDate: Date) => {
       0,
       0,
       0,
-      0
-    )
+      0,
+    ),
   );
 };
 
@@ -42,7 +46,7 @@ export const getMonthRange = (baseDate: Date, offset: number) => {
 export const resolveRange = (
   preset: Preset,
   from?: string,
-  to?: string
+  to?: string,
 ): ResolvedRange<Date> => {
   const today = new Date();
 
@@ -60,11 +64,11 @@ export const resolveRange = (
     case "last-3-months": {
       // Start: 1st day of month, 2 months ago
       const start = new Date(
-        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 2, 1)
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() - 2, 1),
       );
       // End: Last day of current month
       const end = new Date(
-        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0)
+        Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 0),
       );
 
       return {
@@ -97,6 +101,6 @@ export const formatDate = (dateString: string) => {
     year: "numeric",
     month: "short",
     day: "numeric",
-    timeZone: "UTC",
+    timeZone: getUserTimezone(),
   });
 };

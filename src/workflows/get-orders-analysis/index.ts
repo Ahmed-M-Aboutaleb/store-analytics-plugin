@@ -14,6 +14,7 @@ type GetOrdersAnalysisWorkflowOutput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
+  timezone?: string;
 };
 
 export const getOrdersAnalysisWorkflow = createWorkflow(
@@ -23,6 +24,7 @@ export const getOrdersAnalysisWorkflow = createWorkflow(
       fromDate: input.fromDate,
       toDate: input.toDate,
       currencyCode: input.currencyCode,
+      timezone: input.timezone,
     };
     const kpis = getOrdersKPIsStep(KPIS_INPUT);
     const series = getOrdersSeriesStep(KPIS_INPUT);
@@ -33,5 +35,5 @@ export const getOrdersAnalysisWorkflow = createWorkflow(
       country_kpis: country_kpis,
     };
     return new WorkflowResponse(RESULT);
-  }
+  },
 );

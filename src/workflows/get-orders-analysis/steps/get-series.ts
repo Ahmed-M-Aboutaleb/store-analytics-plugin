@@ -7,17 +7,18 @@ type GetOrdersSeriesWorkflowInput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
+  timezone?: string;
 };
 
 async function normalizeSalesCurrency(
   sales: Record<string, SeriesPoint[]>,
   currencyCode: CurrencySelector,
   analysisModuleService: AnalysisModuleService,
-  container: any
+  container: any,
 ) {
   const converter = analysisModuleService.resolveCurrencyConverter(
     container,
-    currencyCode
+    currencyCode,
   );
   if (!converter) {
     return;
@@ -30,10 +31,10 @@ async function normalizeSalesCurrency(
         point.value,
         currency,
         currencyCode,
-        new Date(`${point.date}T12:00:00Z`)
+        new Date(`${point.date}T12:00:00Z`),
       );
       const existingPoint = normalizedSalesSeries.find(
-        (p) => p.date === point.date
+        (p) => p.date === point.date,
       );
       if (existingPoint) {
         existingPoint.value += convertedValue;
@@ -55,22 +56,23 @@ async function normalizeSalesCurrency(
 const getOrdersSeriesStep = createStep(
   "get-orders-series",
   async (
-    { fromDate, toDate, currencyCode }: GetOrdersSeriesWorkflowInput,
-    { container }
+    { fromDate, toDate, currencyCode, timezone }: GetOrdersSeriesWorkflowInput,
+    { container },
   ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
 
     const series = await analysisModuleService.getOrdersSeries(
       fromDate,
-      toDate
+      toDate,
+      timezone,
     );
     if (currencyCode !== "original") {
       const normalizedSeries = await normalizeSalesCurrency(
         series.sales,
         currencyCode,
         analysisModuleService,
-        container
+        container,
       );
       return new StepResponse(
         {
@@ -80,7 +82,7 @@ const getOrdersSeriesStep = createStep(
         {
           orders: series.orders,
           sales: normalizedSeries!,
-        }
+        },
       );
     }
     return new StepResponse(series, series);
@@ -89,7 +91,7 @@ const getOrdersSeriesStep = createStep(
     if (!series) {
       return new StepResponse(null, null);
     }
-  }
+  },
 );
 
 export {

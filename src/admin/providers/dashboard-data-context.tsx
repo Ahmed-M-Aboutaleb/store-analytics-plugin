@@ -14,6 +14,7 @@ import {
 } from "../../types";
 
 import { sdk } from "../../utils/sdk";
+import { getUserTimezone } from "../../utils/date";
 
 type DashboardData = {
   orders: OrdersResponse;
@@ -53,9 +54,9 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
           to: filters.dateRange.to.toISOString(),
           preset: filters.dateRange.preset,
           currency: filters.currency,
+          timezone: getUserTimezone(),
         };
-        console.log("Refetch called with:", { path, limit, offset });
-        await new Promise((resolve) => setTimeout(resolve, 600));
+        console.log("Refetch called with 2:", { params });
 
         let newData: Partial<DashboardData> = {};
         if (path.includes("orders")) {
@@ -91,7 +92,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
         setIsLoading(false);
       }
     },
-    [filters.currency, filters.dateRange]
+    [filters.currency, filters.dateRange],
   );
   const value = useMemo(
     () => ({
@@ -100,7 +101,7 @@ const DashboardDataProvider = ({ children }: { children: React.ReactNode }) => {
       error,
       refetch: fetchData,
     }),
-    [data, isLoading, error, fetchData]
+    [data, isLoading, error, fetchData],
   );
 
   return (
@@ -114,7 +115,7 @@ const useDashboardData = () => {
   const context = useContext(DashboardDataContext);
   if (!context) {
     throw new Error(
-      "useDashboardData must be used within a DashboardDataProvider"
+      "useDashboardData must be used within a DashboardDataProvider",
     );
   }
   return context;

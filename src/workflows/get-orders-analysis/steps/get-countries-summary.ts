@@ -7,17 +7,18 @@ type GetOrdersCountriesSummaryWorkflowInput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
+  timezone?: string;
 };
 
 async function normalizeCountriesSummary(
   countriesSummary: CountryKPI[],
   currencyCode: CurrencySelector,
   analysisModuleService: AnalysisModuleService,
-  container: any
+  container: any,
 ) {
   const converter = analysisModuleService.resolveCurrencyConverter(
     container,
-    currencyCode
+    currencyCode,
   );
   if (!converter) {
     return;
@@ -29,13 +30,13 @@ async function normalizeCountriesSummary(
         summary.amount,
         summary.currency,
         currencyCode,
-        new Date()
+        new Date(),
       ),
       converter.convert(
         summary.fees,
         summary.currency,
         currencyCode,
-        new Date()
+        new Date(),
       ),
     ]);
     normalizedCountriesSummary.push({
@@ -52,28 +53,37 @@ async function normalizeCountriesSummary(
 const getOrdersCountriesSummaryStep = createStep(
   "get-orders-countries-summary",
   async (
-    { fromDate, toDate, currencyCode }: GetOrdersCountriesSummaryWorkflowInput,
-    { container }
+    {
+      fromDate,
+      toDate,
+      currencyCode,
+      timezone,
+    }: GetOrdersCountriesSummaryWorkflowInput,
+    { container },
   ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
 
     const countriesSummary =
-      await analysisModuleService.getOrdersCountrySummary(fromDate, toDate);
+      await analysisModuleService.getOrdersCountrySummary(
+        fromDate,
+        toDate,
+        timezone,
+      );
     if (currencyCode !== "original") {
       const normalizedCountriesSummary = await normalizeCountriesSummary(
         countriesSummary,
         currencyCode,
         analysisModuleService,
-        container
+        container,
       );
       return new StepResponse(
         normalizedCountriesSummary,
-        normalizedCountriesSummary
+        normalizedCountriesSummary,
       );
     }
     return new StepResponse(countriesSummary, countriesSummary);
-  }
+  },
 );
 
 export {

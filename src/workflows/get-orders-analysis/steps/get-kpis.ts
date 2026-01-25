@@ -7,25 +7,27 @@ type GetOrdersKPIsWorkflowInput = {
   fromDate: string;
   toDate: string;
   currencyCode: CurrencySelector;
+  timezone?: string;
 };
 
 const getOrdersKPIsStep = createStep(
   "get-orders-kpis",
   async (
-    { fromDate, toDate, currencyCode }: GetOrdersKPIsWorkflowInput,
-    { container }
+    { fromDate, toDate, currencyCode, timezone }: GetOrdersKPIsWorkflowInput,
+    { container },
   ) => {
     const analysisModuleService: AnalysisModuleService =
       container.resolve(ANALYSIS_MODULE);
     const converter = analysisModuleService.resolveCurrencyConverter(
       container,
-      currencyCode
+      currencyCode,
     );
     const kpis = await analysisModuleService.getOrderKPIs(
       fromDate,
       toDate,
       currencyCode,
-      converter
+      converter,
+      timezone?.toString() || "UTC",
     );
     return new StepResponse(kpis, kpis);
   },
@@ -33,7 +35,7 @@ const getOrdersKPIsStep = createStep(
     if (!kpis) {
       return new StepResponse(null, null);
     }
-  }
+  },
 );
 
 export { getOrdersKPIsStep, GetOrdersKPIsWorkflowInput };

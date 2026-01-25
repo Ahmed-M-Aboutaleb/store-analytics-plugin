@@ -13,28 +13,57 @@ class ProductsAnalysisService {
 
   async getProductVariants(
     fromDate: string,
-    toDate: string
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"],
   ): Promise<TopVariant[]> {
-    const results = await this.connection("order_item")
-      .join("order_line_item", "order_item.item_id", "order_line_item.id")
+    const results = await this.getBaseQuery(fromDate, toDate, allowedStatuses)
+      .join({ oi: "order_item" }, "oi.order_id", "o.id")
+      .join({ oli: "order_line_item" }, "oi.item_id", "oli.id")
       .select([
-        "order_line_item.product_title",
-        "order_line_item.product_handle",
-        "order_line_item.variant_title",
-        "order_line_item.thumbnail",
-        this.connection.raw("SUM(order_item.quantity)::integer as quantity"),
+        "oli.product_title",
+        "oli.product_handle",
+        "oli.variant_title",
+        "oli.thumbnail",
+        this.connection.raw("SUM(oi.quantity)::integer as quantity"),
       ])
-      .where("order_item.created_at", ">=", fromDate)
-      .where("order_item.created_at", "<=", toDate)
       .groupBy([
-        "order_line_item.product_title",
-        "order_line_item.product_handle",
-        "order_line_item.variant_title",
-        "order_line_item.thumbnail",
+        "oli.product_title",
+        "oli.product_handle",
+        "oli.variant_title",
+        "oli.thumbnail",
       ])
       .orderBy("quantity", "desc")
       .limit(10);
     return results;
+  }
+
+  private getBaseQuery(
+    fromDate: string,
+    toDate: string,
+    allowedStatuses: string[] = ["completed", "pending"],
+  ) {
+    const ORDERS_SUMMARY_SUBQUERY = this.connection(
+      "order_summary as os_latest",
+    )
+      .select("order_id")
+      .max("version as version")
+      .whereNull("deleted_at")
+      .groupBy("order_id");
+
+    return this.connection({ o: "order" })
+      .leftJoin(
+        ORDERS_SUMMARY_SUBQUERY.as("os_latest"),
+        "os_latest.order_id",
+        "o.id",
+      )
+      .leftJoin({ os: "order_summary" }, function () {
+        this.on("os.order_id", "o.id")
+          .andOn("os.version", "os_latest.version")
+          .andOnNull("os.deleted_at");
+      })
+      .where("o.created_at", ">=", fromDate)
+      .where("o.created_at", "<=", toDate)
+      .whereIn("o.status", allowedStatuses);
   }
 }
 

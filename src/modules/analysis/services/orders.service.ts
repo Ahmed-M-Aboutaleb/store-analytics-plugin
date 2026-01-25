@@ -29,22 +29,30 @@ class OrdersAnalysisService {
     toDate: string,
     currency: CurrencySelector,
     converter: CurrencyNormalizationService | null,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ): Promise<OrderKPI[]> {
-    const query = this.getBaseQuery(fromDate, toDate, allowedStatuses);
-
+    const query = this.getBaseQuery(
+      fromDate,
+      toDate,
+      allowedStatuses,
+      timezone,
+    );
+    console.log("Timezone in getOrderKPIs:", timezone);
     const rows: OrderKPIRow[] = await query
       .select([
         this.connection.raw(
-          "TO_CHAR(date_trunc('day', o.created_at), 'YYYY-MM-DD') as day"
+          "TO_CHAR(date_trunc('day', o.created_at AT TIME ZONE ?), 'YYYY-MM-DD') as day",
+          [timezone],
         ),
         "o.currency_code",
       ])
+
       .count("o.id as daily_orders")
       .select(
         this.connection.raw(
-          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`
-        )
+          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`,
+        ),
       )
       .groupBy("day", "o.currency_code");
 
@@ -58,22 +66,30 @@ class OrdersAnalysisService {
   async getOrdersSeries(
     fromDate: string,
     toDate: string,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ) {
-    const query = this.getBaseQuery(fromDate, toDate, allowedStatuses);
-
+    const query = this.getBaseQuery(
+      fromDate,
+      toDate,
+      allowedStatuses,
+      timezone,
+    );
+    console.log("Timezone in getOrdersSeries:", timezone);
     const rawRows = await query
       .select([
+        // 2. Shift UTC to User Timezone -> Then Truncate to Day
         this.connection.raw(
-          "TO_CHAR(date_trunc('day', o.created_at), 'YYYY-MM-DD') as day"
+          "TO_CHAR(date_trunc('day', o.created_at AT TIME ZONE ?), 'YYYY-MM-DD') as day",
+          [timezone],
         ),
         "o.currency_code",
       ])
       .count("o.id as daily_orders")
       .select(
         this.connection.raw(
-          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`
-        )
+          `SUM(COALESCE((os.totals ->> 'current_order_total')::numeric, 0)) as daily_sales`,
+        ),
       )
       .groupBy("day", "o.currency_code")
       .orderBy("day", "asc");
@@ -91,31 +107,32 @@ class OrdersAnalysisService {
   async getOrdersCountrySummary(
     from: string,
     to: string,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ): Promise<CountryKPI[]> {
-    const query = this.getBaseQuery(from, to, allowedStatuses);
-
+    const query = this.getBaseQuery(from, to, allowedStatuses, timezone);
+    console.log("Timezone in getOrdersCountrySummary:", timezone);
     const rows = await query
       .leftJoin({ sa: "order_address" }, "sa.id", "o.shipping_address_id")
       .leftJoin({ ba: "order_address" }, "ba.id", "o.billing_address_id")
       .select(
         this.connection.raw(
-          "COALESCE(sa.country_code, ba.country_code) as country_code"
-        )
+          "COALESCE(sa.country_code, ba.country_code) as country_code",
+        ),
       )
       .select("o.currency_code")
       .sum({
         amount: this.connection.raw(
-          "COALESCE((os.totals ->> 'current_order_total')::numeric, 0)"
+          "COALESCE((os.totals ->> 'current_order_total')::numeric, 0)",
         ) as any,
       })
       .sum({
         fees: this.connection.raw(
-          "COALESCE((o.metadata ->> 'payment_gateway_fee')::numeric, 0)"
+          "COALESCE((o.metadata ->> 'payment_gateway_fee')::numeric, 0)",
         ) as any,
       })
       .groupByRaw(
-        "COALESCE(sa.country_code, ba.country_code), o.currency_code"
+        "COALESCE(sa.country_code, ba.country_code), o.currency_code",
       );
 
     return rows.map((row: any) => ({
@@ -130,7 +147,7 @@ class OrdersAnalysisService {
   private async normalizeKPISalesCurrency(
     rows: OrderKPIRow[],
     currency: CurrencySelector,
-    converter: CurrencyNormalizationService | null
+    converter: CurrencyNormalizationService | null,
   ): Promise<OrderKPI[]> {
     let totalNormalizedSales = 0;
     let totalOrders = 0;
@@ -148,12 +165,12 @@ class OrdersAnalysisService {
               salesAmount,
               originCurrency,
               currency,
-              dayDate
+              dayDate,
             )
           : salesAmount;
 
         totalNormalizedSales += convertedAmount;
-      })
+      }),
     );
 
     return [
@@ -213,10 +230,11 @@ class OrdersAnalysisService {
   private getBaseQuery(
     fromDate: string,
     toDate: string,
-    allowedStatuses: string[] = ["completed", "pending"]
+    allowedStatuses: string[] = ["completed", "pending"],
+    timezone: string = "UTC",
   ) {
     const ORDERS_SUMMARY_SUBQUERY = this.connection(
-      "order_summary as os_latest"
+      "order_summary as os_latest",
     )
       .select("order_id")
       .max("version as version")
@@ -227,15 +245,21 @@ class OrdersAnalysisService {
       .leftJoin(
         ORDERS_SUMMARY_SUBQUERY.as("os_latest"),
         "os_latest.order_id",
-        "o.id"
+        "o.id",
       )
       .leftJoin({ os: "order_summary" }, function () {
         this.on("os.order_id", "o.id")
           .andOn("os.version", "os_latest.version")
           .andOnNull("os.deleted_at");
       })
-      .where("o.created_at", ">=", fromDate)
-      .where("o.created_at", "<=", toDate)
+      .whereRaw("o.created_at AT TIME ZONE ? >= ?::timestamp", [
+        timezone,
+        fromDate,
+      ])
+      .whereRaw("o.created_at AT TIME ZONE ? <= ?::timestamp", [
+        timezone,
+        toDate,
+      ])
       .whereIn("o.status", allowedStatuses);
   }
 }

@@ -19,7 +19,7 @@ export const CurrencySelectorSchema = z.object({
     .optional()
     .default("original")
     .describe(
-      "Currency selector. One of: original, USD, AED, KWD, GBP. 'original' uses the order's original currency."
+      "Currency selector. One of: original, USD, AED, KWD, GBP. 'original' uses the order's original currency.",
     ),
 });
 
@@ -36,10 +36,15 @@ export const CountrySummarySchema = z.object({
     .describe("Include aggregated totals per country when true."),
 });
 
+export const DateTimezoneSchema = z.object({
+  timezone: z.string().describe("Timezone to use for date calculations."),
+});
+
 export const AnalyticsOrdersQuerySchema = createFindParams()
   .merge(PresetSchema)
   .merge(CurrencySelectorSchema)
   .merge(CountrySummarySchema)
+  .merge(DateTimezoneSchema)
   .superRefine((value, ctx) => {
     if (value.preset === "custom") {
       if (!value.from) {
@@ -119,5 +124,5 @@ export const AnalyticsProductsQuerySchema = PresetSchema.superRefine(
         });
       }
     }
-  }
+  },
 );

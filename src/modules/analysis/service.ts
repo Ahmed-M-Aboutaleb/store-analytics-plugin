@@ -43,38 +43,44 @@ class AnalysisModuleService {
     toDate: string,
     currency: CurrencySelector,
     converter: CurrencyNormalizationService | null,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ): Promise<OrderKPI[]> {
     return await this.ordersAnalysisService.getOrderKPIs(
       fromDate,
       toDate,
       currency,
       converter,
-      allowedStatuses
+      timezone,
+      allowedStatuses,
     );
   }
 
   async getOrdersSeries(
     fromDate: string,
     toDate: string,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ) {
     return await this.ordersAnalysisService.getOrdersSeries(
       fromDate,
       toDate,
-      allowedStatuses
+      timezone,
+      allowedStatuses,
     );
   }
 
   async getOrdersCountrySummary(
     fromDate: string,
     toDate: string,
-    allowedStatuses: string[] = ["completed", "pending"]
+    timezone: string = "UTC",
+    allowedStatuses: string[] = ["completed", "pending"],
   ) {
     return await this.ordersAnalysisService.getOrdersCountrySummary(
       fromDate,
       toDate,
-      allowedStatuses
+      timezone,
+      allowedStatuses,
     );
   }
 
@@ -82,11 +88,11 @@ class AnalysisModuleService {
 
   async getProductVariants(
     fromDate: string,
-    toDate: string
+    toDate: string,
   ): Promise<TopVariant[]> {
     return await this.productsAnalysisService.getProductVariants(
       fromDate,
-      toDate
+      toDate,
     );
   }
 
@@ -94,17 +100,17 @@ class AnalysisModuleService {
 
   async getCustomersKPIs(
     fromDate: string,
-    toDate: string
+    toDate: string,
   ): Promise<CustomersKPI> {
     return await this.customersAnalysisService.getCustomersKPIs(
       fromDate,
-      toDate
+      toDate,
     );
   }
   async getCustomersSeries(fromDate: string, toDate: string) {
     return await this.customersAnalysisService.getCustomersSeries(
       fromDate,
-      toDate
+      toDate,
     );
   }
 
@@ -112,7 +118,7 @@ class AnalysisModuleService {
 
   resolveCurrencyConverter(
     scope: MedusaRequest["scope"],
-    currency: CurrencySelector
+    currency: CurrencySelector,
   ): CurrencyNormalizationService | null {
     if (currency === "original") {
       return null;
@@ -120,7 +126,7 @@ class AnalysisModuleService {
 
     try {
       return scope.resolve<CurrencyNormalizationService>(
-        "currencyNormalizationService"
+        "currencyNormalizationService",
       );
     } catch {
       return fawazAhmedConverter;
